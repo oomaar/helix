@@ -24,7 +24,7 @@ export function EmptyState({
       )}
     >
       {icon ? (
-        <div className="bg-surface-2 text-text-3 flex h-11 w-11 items-center justify-center rounded-full border border-[var(--color-border)]">
+        <div className="bg-surface-2 text-text-3 border-border-token flex h-11 w-11 items-center justify-center rounded-full border">
           {icon}
         </div>
       ) : null}

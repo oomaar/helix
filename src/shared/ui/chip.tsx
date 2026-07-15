@@ -16,10 +16,10 @@ export function Chip({
     <button
       type={type}
       className={cn(
-        "h-[30px] cursor-pointer rounded-[7px] border px-3 text-[12px] font-medium transition-colors",
+        "rounded-control h-7.5 cursor-pointer border px-3 text-[12px] font-medium transition-colors",
         active
           ? "border-brand bg-brand-soft text-brand font-semibold"
-          : "bg-surface text-text-2 border-[var(--color-border)] hover:border-[var(--color-border-strong)]",
+          : "bg-surface text-text-2 border-border-token hover:border-border-strong",
         className,
       )}
       {...rest}

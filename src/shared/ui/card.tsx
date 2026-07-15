@@ -19,7 +19,7 @@ export function Card({
   return (
     <Tag
       className={cn(
-        "bg-surface rounded-[11px] border border-[var(--color-border)] shadow-[var(--shadow-elev-1)]",
+        "bg-surface rounded-panel border-border-token border shadow-(--shadow-elev-1)",
         padded && "p-[15px_18px]",
         className,
       )}
@@ -34,10 +34,7 @@ export function CardHeader({
 }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn(
-        "flex items-center gap-3 px-[18px] pt-[15px] pb-3",
-        className,
-      )}
+      className={cn("flex items-center gap-3 px-4.5 pt-3.75 pb-3", className)}
       {...rest}
     />
   );
@@ -71,5 +68,5 @@ export function CardBody({
   className,
   ...rest
 }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("px-[18px] pb-[15px]", className)} {...rest} />;
+  return <div className={cn("px-4.5 pb-3.75", className)} {...rest} />;
 }

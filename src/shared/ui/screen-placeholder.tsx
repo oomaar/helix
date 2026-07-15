@@ -16,9 +16,9 @@ export function ScreenPlaceholder({
   phase = "Phase 1",
 }: ScreenPlaceholderProps) {
   return (
-    <div className="mx-auto max-w-[1400px] p-[22px_26px_60px]">
+    <div className="mx-auto max-w-350 p-[22px_26px_60px]">
       <PageHeader title={title} description={description} />
-      <div className="bg-surface-2 rounded-[var(--radius-panel)] border border-dashed border-[var(--color-border-strong)] p-8 text-center">
+      <div className="bg-surface-2 rounded-panel border-border-strong border border-dashed p-8 text-center">
         <div className="text-text text-[13px] font-semibold">
           Screen coming in {phase}
         </div>

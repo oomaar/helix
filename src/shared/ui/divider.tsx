@@ -7,7 +7,7 @@ export function Divider({
 }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("h-px w-full bg-[var(--color-border)]", className)}
+      className={cn("bg-border-token h-px w-full", className)}
       role="separator"
       {...rest}
     />

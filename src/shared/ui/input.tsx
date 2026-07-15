@@ -10,7 +10,7 @@ export function Input({ leading, trailing, className, ...rest }: InputProps) {
   return (
     <div
       className={cn(
-        "bg-surface flex h-8 items-center gap-2 rounded-[8px] border border-[var(--color-border)] px-2.5 focus-within:border-[var(--color-brand-line)] focus-within:ring-2 focus-within:ring-[var(--color-brand-soft)]",
+        "bg-surface border-border-token focus-within:border-brand-line focus-within:ring-brand-soft flex h-8 items-center gap-2 rounded-[8px] border px-2.5 focus-within:ring-2",
         className,
       )}
     >

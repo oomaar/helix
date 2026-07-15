@@ -25,7 +25,7 @@ export function StatusDot({
   return (
     <span
       className={cn(
-        "inline-block h-[7px] w-[7px] flex-none rounded-full",
+        "inline-block h-1.75 w-1.75 flex-none rounded-full",
         COLORS[tone],
         pulse && "opacity-90 shadow-[0_0_0_3px_currentColor]",
         className,

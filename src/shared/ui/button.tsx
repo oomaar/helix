@@ -37,7 +37,7 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex cursor-pointer items-center justify-center font-sans font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-[var(--color-brand-line)] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+        "focus-visible:ring-brand-line inline-flex cursor-pointer items-center justify-center font-sans font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
         VARIANTS[variant],
         SIZES[size],
         fullWidth && "w-full",
