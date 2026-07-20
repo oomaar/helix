@@ -9,3 +9,5 @@ export * from "./feature-flags";
 export * from "./permissions";
 export * from "./attachments";
 export * from "./activities";
+export * from "./metrics";
+export * from "./notifications";
