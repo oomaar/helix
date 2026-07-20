@@ -10,6 +10,7 @@ import {
   SearchIcon,
 } from "@/shared/icons";
 import { cn } from "@/lib/utils";
+import { emitOpenProvisioning } from "@/shared/lib/app-events";
 import { NAV_GROUPS } from "@/shared/nav/nav-config";
 import { useTheme } from "@/shared/theme/theme-provider";
 import { Dialog, EmptyState, Kbd } from "@/shared/ui";
@@ -53,7 +54,10 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         group: "Actions",
         icon: PlusIcon,
         keywords: "new create resource",
-        perform: go("/resources"),
+        perform: () => {
+          onClose();
+          emitOpenProvisioning();
+        },
       },
       {
         id: "action:export",
