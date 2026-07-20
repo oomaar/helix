@@ -5,9 +5,8 @@ import { usePathname } from "next/navigation";
 import { HelixLogoIcon } from "@/shared/icons";
 import { cn } from "@/lib/utils";
 import { NAV_GROUPS, type NavItem } from "@/shared/nav/nav-config";
-import { Avatar } from "@/shared/ui/avatar";
 import { Badge } from "@/shared/ui/badge";
-import { ChevronUpDownIcon } from "@/shared/icons";
+import { UserMenu } from "./user-menu";
 
 function isActive(item: NavItem, pathname: string): boolean {
   if (item.href === pathname) return true;
@@ -83,21 +82,7 @@ export function Sidebar() {
       </nav>
 
       <div className="border-border-token flex-none border-t p-2.5">
-        <button
-          type="button"
-          className="hover:bg-hover flex w-full cursor-pointer items-center gap-2.5 rounded-[8px] px-2 py-1.75 text-left"
-        >
-          <Avatar name="Dana Krishnan" size={30} />
-          <div className="min-w-0 flex-1">
-            <div className="text-text truncate text-[12.5px] font-semibold">
-              Dana Krishnan
-            </div>
-            <div className="text-text-3 truncate text-[11px]">
-              Platform Ops · Admin
-            </div>
-          </div>
-          <ChevronUpDownIcon size={15} className="text-text-3" />
-        </button>
+        <UserMenu />
       </div>
     </aside>
   );
