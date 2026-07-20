@@ -16,7 +16,13 @@ export function PageHeader({
   ...rest
 }: PageHeaderProps) {
   return (
-    <div className={cn("mb-5 flex items-end gap-4", className)} {...rest}>
+    <div
+      className={cn(
+        "mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4",
+        className,
+      )}
+      {...rest}
+    >
       <div className="min-w-0 flex-1">
         <h1 className="text-text m-0 text-[20px] font-bold tracking-tight">
           {title}
@@ -26,7 +32,9 @@ export function PageHeader({
         ) : null}
       </div>
       {actions ? (
-        <div className="flex items-center gap-2">{actions}</div>
+        <div className="flex flex-none flex-wrap items-center gap-2">
+          {actions}
+        </div>
       ) : null}
     </div>
   );
