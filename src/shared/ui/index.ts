@@ -14,3 +14,4 @@ export { PageHeader } from "./page-header";
 export { Popover } from "./popover";
 export { Skeleton } from "./skeleton";
 export { StatusDot, type StatusTone } from "./status-dot";
+export { Switch } from "./switch";
