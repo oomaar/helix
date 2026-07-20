@@ -15,12 +15,12 @@ export function TopBar() {
   const [env, setEnv] = useState<Env>("Production");
 
   return (
-    <header className="bg-surface flex h-[var(--spacing-topbar)] flex-none items-center gap-3.5 border-b border-[var(--color-border)] px-[18px]">
+    <header className="bg-surface h-topbar border-border-token flex flex-none items-center gap-3.5 border-b px-4.5">
       <Breadcrumbs />
 
       <button
         type="button"
-        className="bg-surface-2 text-text-3 ml-3.5 flex h-8 min-w-[230px] cursor-pointer items-center gap-2 rounded-[8px] border border-[var(--color-border)] pr-2.5 pl-2.5 font-sans text-[12.5px] hover:border-[var(--color-border-strong)]"
+        className="bg-surface-2 text-text-3 border-border-token hover:border-border-strong ml-3.5 flex h-8 min-w-57.5 cursor-pointer items-center gap-2 rounded-[8px] border pr-2.5 pl-2.5 font-sans text-[12.5px]"
       >
         <SearchIcon size={14} />
         <span className="flex-1 text-left">Search or jump to…</span>
@@ -37,7 +37,7 @@ export function TopBar() {
               ]!,
             )
           }
-          className="bg-surface-2 text-text flex h-8 cursor-pointer items-center gap-[7px] rounded-[8px] border border-[var(--color-border)] px-2.5 text-[12px] font-medium hover:border-[var(--color-border-strong)]"
+          className="bg-surface-2 text-text border-border-token hover:border-border-strong flex h-8 cursor-pointer items-center gap-1.75 rounded-[8px] border px-2.5 text-[12px] font-medium"
         >
           <StatusDot tone="success" />
           {env}
@@ -46,7 +46,7 @@ export function TopBar() {
 
         <IconButton aria-label="Notifications">
           <BellIcon size={16} />
-          <span className="bg-danger border-surface absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full border-2 px-1 text-[10px] font-bold text-white">
+          <span className="bg-danger border-surface absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full border-2 px-1 text-[10px] font-bold text-white">
             5
           </span>
         </IconButton>

@@ -9,7 +9,7 @@ export function Breadcrumbs() {
 
   return (
     <nav
-      className="flex min-w-0 items-center gap-[7px] text-[12.5px]"
+      className="flex min-w-0 items-center gap-1.75 text-[12.5px]"
       aria-label="Breadcrumb"
     >
       <span className="text-text-3">Helix</span>

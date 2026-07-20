@@ -19,10 +19,10 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="bg-sidebar flex h-full w-[var(--spacing-sidebar)] flex-none flex-col border-r border-[var(--color-border)]">
-      <div className="flex h-[var(--spacing-topbar)] flex-none items-center gap-2.5 border-b border-[var(--color-border)] px-4">
+    <aside className="bg-sidebar w-sidebar border-border-token flex h-full flex-none flex-col border-r">
+      <div className="h-topbar border-border-token flex flex-none items-center gap-2.5 border-b px-4">
         <div
-          className="flex h-[26px] w-[26px] flex-none items-center justify-center rounded-[7px] text-white"
+          className="rounded-control flex h-6.5 w-6.5 flex-none items-center justify-center text-white"
           style={{
             background:
               "linear-gradient(135deg,var(--color-brand),var(--color-brand-2))",
@@ -34,7 +34,7 @@ export function Sidebar() {
         <div className="text-text text-[15px] font-bold tracking-tight">
           Helix
         </div>
-        <div className="text-text-3 ml-auto rounded-[5px] border border-[var(--color-border)] px-1.5 py-[2px] font-mono text-[9.5px] font-semibold">
+        <div className="text-text-3 border-border-token ml-auto rounded-[5px] border px-1.5 py-0.5 font-mono text-[9.5px] font-semibold">
           v4.2
         </div>
       </div>
@@ -53,7 +53,7 @@ export function Sidebar() {
                   key={item.id}
                   href={item.href}
                   className={cn(
-                    "mb-0.5 flex cursor-pointer items-center gap-2.5 rounded-[8px] px-2.5 py-[7px] text-[13px] no-underline transition-colors",
+                    "mb-0.5 flex cursor-pointer items-center gap-2.5 rounded-[8px] px-2.5 py-1.75 text-[13px] no-underline transition-colors",
                     active
                       ? "text-text bg-brand-soft font-semibold shadow-[inset_2px_0_0_var(--color-brand)]"
                       : "text-text-2 hover:bg-hover font-medium",
@@ -82,10 +82,10 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="flex-none border-t border-[var(--color-border)] p-2.5">
+      <div className="border-border-token flex-none border-t p-2.5">
         <button
           type="button"
-          className="hover:bg-hover flex w-full cursor-pointer items-center gap-2.5 rounded-[8px] px-2 py-[7px] text-left"
+          className="hover:bg-hover flex w-full cursor-pointer items-center gap-2.5 rounded-[8px] px-2 py-1.75 text-left"
         >
           <Avatar name="Dana Krishnan" size={30} />
           <div className="min-w-0 flex-1">
