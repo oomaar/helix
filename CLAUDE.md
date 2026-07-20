@@ -311,39 +311,51 @@ shared/
 Current Phase:
 
 ```
-Phase 0 — Foundation
+Phase 1 — Application Shell
 ```
 
 Current Goal:
 
 ```
-Prepare the project to scale before writing features.
+Complete the reusable application framework the whole product sits inside.
 ```
 
-Current Checklist:
+Status: ✅ Complete
+
+Delivered (shell):
 
 ```
-- Project initialization
-- Folder structure
-- Feature-based architecture
-- Routing
-- Layout shell
-- Theme system
-- Typography
-- Color tokens
-- Design tokens
-- Icon system
-- Reusable UI primitives
-- Fake backend setup
-- Data models
-- Relationships
-- Mock database
-- Query layer
-- Utilities
-- ESLint
-- Prettier
-- Husky
-- lint-staged
+- Sidebar, Header, Breadcrumbs, Environment switcher, global layout,
+  navigation state, dark / light mode (from Phase 0)
+- Command Palette (shared/command): ⌘K / Ctrl-K + header search field,
+  fuzzy search over navigation + quick actions, full keyboard nav,
+  portal Dialog (focus restore, scroll lock, Escape/backdrop dismiss)
+- Notifications panel (shared/layout/notifications-menu): unread badge,
+  mark-all-read, derived from incidents + budgets + activities
+- User menu (shared/layout/user-menu): profile, command palette, theme,
+  sign out
+- Reusable overlay primitives (shared/ui): Popover (outside-click / Escape),
+  Dialog, Menu items
+```
+
+Also delivered — first vertical slice on top of the shell:
+
+```
+- Dashboard feature (features/dashboard) — "Cloud Operations Overview",
+  faithful to the approved design
+- Reusable SVG chart primitives (shared/charts): area+forecast, donut,
+  stacked bar, heatmap, sparkline — zero deps, theme-aware, hover tooltips,
+  responsive measuring (useMeasure)
+- Metrics query layer (lib/backend/queries/metrics.ts) + useAsync hook
+  (loading / empty / error / retry states), all derived from the seeded graph
+```
+
+Next Phase:
+
+```
+Phase 2 — Resources: enterprise data grid (sorting, pagination, search,
+filter builder, bulk selection + actions, column visibility, saved views,
+row detail) + resource detail screen.
 ```
 
 ---

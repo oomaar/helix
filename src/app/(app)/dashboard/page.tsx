@@ -1,10 +1,10 @@
-import { ScreenPlaceholder } from "@/shared/ui/screen-placeholder";
+import type { Metadata } from "next";
+import { DashboardView } from "@/features/dashboard";
+
+export const metadata: Metadata = {
+  title: "Cloud Operations Overview · Helix",
+};
 
 export default function DashboardPage() {
-  return (
-    <ScreenPlaceholder
-      title="Cloud Operations Overview"
-      description="Consolidated spend, utilization and health across all providers."
-    />
-  );
+  return <DashboardView />;
 }
