@@ -16,7 +16,7 @@ import { SpendForecastPanel } from "./panels/spend-forecast-panel";
  */
 export function DashboardView() {
   return (
-    <div className="mx-auto max-w-350 p-[22px_26px_60px]">
+    <div className="mx-auto max-w-350 px-4 py-5 md:p-[22px_26px_60px]">
       <PageHeader
         title="Cloud Operations Overview"
         description="Consolidated spend, utilization and health across all providers."
