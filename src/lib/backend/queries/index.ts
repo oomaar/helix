@@ -11,3 +11,4 @@ export * from "./attachments";
 export * from "./activities";
 export * from "./metrics";
 export * from "./notifications";
+export * from "./provisioning";

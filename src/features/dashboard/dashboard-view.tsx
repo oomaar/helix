@@ -1,6 +1,5 @@
-import Link from "next/link";
-import { DownloadIcon, PlusIcon } from "@/shared/icons";
-import { Button, PageHeader } from "@/shared/ui";
+import { PageHeader } from "@/shared/ui";
+import { DashboardActions } from "./components/dashboard-actions";
 import { ActiveAlertsPanel } from "./panels/active-alerts-panel";
 import { RecentActivityPanel } from "./panels/recent-activity-panel";
 import { RegionUtilizationPanel } from "./panels/region-utilization-panel";
@@ -20,20 +19,7 @@ export function DashboardView() {
       <PageHeader
         title="Cloud Operations Overview"
         description="Consolidated spend, utilization and health across all providers."
-        actions={
-          <>
-            <Button size="sm" variant="secondary">
-              <DownloadIcon size={14} />
-              Export
-            </Button>
-            <Link href="/resources">
-              <Button size="sm" variant="primary">
-                <PlusIcon size={14} />
-                Provision resource
-              </Button>
-            </Link>
-          </>
-        }
+        actions={<DashboardActions />}
       />
 
       <div className="grid grid-cols-12 gap-3.5">
