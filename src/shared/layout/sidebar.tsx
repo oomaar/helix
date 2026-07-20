@@ -104,7 +104,10 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 /** Static navigation rail — visible from the `lg` breakpoint up. */
 export function Sidebar() {
   return (
-    <aside className="bg-sidebar w-sidebar border-border-token hidden h-full flex-none flex-col border-r lg:flex">
+    <aside
+      data-print-hide
+      className="bg-sidebar w-sidebar border-border-token hidden h-full flex-none flex-col border-r lg:flex"
+    >
       <SidebarContent />
     </aside>
   );
@@ -116,6 +119,7 @@ export function SidebarDrawer() {
 
   return (
     <div
+      data-print-hide
       className={cn(
         "fixed inset-0 z-40 lg:hidden",
         open ? "pointer-events-auto" : "pointer-events-none",

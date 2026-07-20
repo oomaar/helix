@@ -17,12 +17,17 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <CommandPaletteProvider>
       <SidebarProvider>
-        <div className="bg-bg text-text flex h-dvh w-full overflow-hidden">
+        <div
+          data-shell-root
+          className="bg-bg text-text flex h-dvh w-full overflow-hidden"
+        >
           <Sidebar />
           <SidebarDrawer />
           <div className="flex h-full min-w-0 flex-1 flex-col">
             <TopBar />
-            <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+            <main data-shell-main className="min-h-0 flex-1 overflow-y-auto">
+              {children}
+            </main>
           </div>
         </div>
       </SidebarProvider>
