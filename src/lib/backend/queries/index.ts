@@ -3,6 +3,7 @@ export * from "./teams";
 export * from "./providers";
 export * from "./resources";
 export * from "./resource-grid";
+export * from "./resource-detail";
 export * from "./budgets";
 export * from "./incidents";
 export * from "./audit";
