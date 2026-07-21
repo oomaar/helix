@@ -306,56 +306,79 @@ shared/
 
 ---
 
+# Completed Phases
+
+## Phase 1 — Foundation ✅
+
+Prepared the project to scale before writing features.
+
+```
+- Feature-based architecture, App Router routing, layout shell
+- Design tokens (color, typography, spacing), light/dark theme system
+  (no-flash init script via useSyncExternalStore)
+- Icon system + reusable UI primitives (Card, Button, Badge, Input, Kbd,
+  StatusDot, Avatar, Divider, EmptyState, Skeleton, …)
+- Connected fake backend: relational models, deterministic seed, in-memory
+  store, async query layer + simulated latency, utilities
+- Tooling: ESLint, Prettier, Husky, lint-staged
+```
+
+## Phase 2 — Application Shell ✅
+
+Completed the reusable framework the whole product sits inside, then proved it
+out with the first vertical slice.
+
+```
+Shell
+- Sidebar, top bar, breadcrumbs, global layout, navigation state
+- Command palette (⌘K + search, fuzzy nav/actions, keyboard nav)
+- Notifications menu, user menu, environment switcher (Popover)
+- Overlay primitives: Popover, Dialog (portal/scroll-lock/focus-restore), menu
+- Responsive shell (sidebar → drawer, top-bar reflow, h-dvh) + branded favicon
+
+First vertical slice — Dashboard ("Cloud Operations Overview")
+- 7 panels with per-panel loading/empty/error + responsive grid
+- Reusable zero-dep SVG charts: Area (+forecast), Donut, StackedBar, Heatmap,
+  Sparkline (theme-aware, hover tooltips, responsive useMeasure)
+- Metrics query layer + useAsync hook (all derived from the seeded graph)
+- Export dashboard → PDF (theme-preserving print)
+
+Forms system + provisioning
+- Form primitives: Field, custom Select (portal listbox), Switch, RadioGroup
+- 4-step "Provision resource" wizard: validation, conditional config,
+  repeatable groups, review + confirmation; fake submit routes for FinOps
+  approval and records to the activity/audit streams
+```
+
+---
+
 # Current Phase
 
 Current Phase:
 
 ```
-Phase 1 — Application Shell
+Phase 3 — Resource Management
 ```
 
 Current Goal:
 
 ```
-Complete the reusable application framework the whole product sits inside.
+The heart of the product.
 ```
 
-Status: ✅ Complete
-
-Delivered (shell):
-
 ```
-- Sidebar, Header, Breadcrumbs, Environment switcher, global layout,
-  navigation state, dark / light mode (from Phase 0)
-- Command Palette (shared/command): ⌘K / Ctrl-K + header search field,
-  fuzzy search over navigation + quick actions, full keyboard nav,
-  portal Dialog (focus restore, scroll lock, Escape/backdrop dismiss)
-- Notifications panel (shared/layout/notifications-menu): unread badge,
-  mark-all-read, derived from incidents + budgets + activities
-- User menu (shared/layout/user-menu): profile, command palette, theme,
-  sign out
-- Reusable overlay primitives (shared/ui): Popover (outside-click / Escape),
-  Dialog, Menu items
-```
-
-Also delivered — first vertical slice on top of the shell:
-
-```
-- Dashboard feature (features/dashboard) — "Cloud Operations Overview",
-  faithful to the approved design
-- Reusable SVG chart primitives (shared/charts): area+forecast, donut,
-  stacked bar, heatmap, sparkline — zero deps, theme-aware, hover tooltips,
-  responsive measuring (useMeasure)
-- Metrics query layer (lib/backend/queries/metrics.ts) + useAsync hook
-  (loading / empty / error / retry states), all derived from the seeded graph
-```
-
-Next Phase:
-
-```
-Phase 2 — Resources: enterprise data grid (sorting, pagination, search,
-filter builder, bulk selection + actions, column visibility, saved views,
-row detail) + resource detail screen.
+- Resources table
+- Pagination
+- Sorting
+- Search
+- Filters
+- Saved views
+- Grouping
+- Column visibility
+- Bulk selection
+- Bulk actions
+- Row expansion
+- Right drawer preview
 ```
 
 ---
