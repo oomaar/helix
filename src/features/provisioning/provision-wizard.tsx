@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { submitProvisionRequest, type ProvisionResult } from "@/lib/backend";
 import { cn, money } from "@/lib/utils";
+import { emitResourceCreated } from "@/shared/lib/app-events";
 import { CheckIcon } from "@/shared/icons";
 import { Badge, Button, Dialog } from "@/shared/ui";
 import { STEPS } from "./constants";
@@ -70,6 +71,7 @@ export function ProvisionWizard({ onClose }: { onClose: () => void }) {
         estimatedMonthlyCost: estimateCost(draft),
       });
       setResult(res);
+      emitResourceCreated(draft.name.trim());
     } finally {
       setSubmitting(false);
     }

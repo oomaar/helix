@@ -6,7 +6,7 @@
  */
 
 import { idFactory } from "@/lib/utils";
-import type { AuditLog, Resource } from "../models";
+import type { AuditLog, Environment, Resource } from "../models";
 import { paginate, request, type Paginated } from "../client";
 import { getDatabase } from "../store";
 import { hydrateResource, type ResourceWithRelations } from "./resources";
@@ -334,41 +334,108 @@ export type BulkAction =
   | "archive"
   | "delete";
 
+/** Optional inputs for actions that need a target (owner, environment, tag). */
+export type BulkActionPayload = {
+  ownerId?: string;
+  environment?: Environment;
+  tag?: { key: string; value: string };
+};
+
 export type BulkActionResult = { action: BulkAction; count: number };
+
+type MutableResource = { -readonly [K in keyof Resource]: Resource[K] };
 
 const nextAuditId = idFactory("gaud");
 
+function auditFor(action: BulkAction) {
+  if (action === "restart") return "restart" as const;
+  if (action === "delete" || action === "archive") return "delete" as const;
+  return "update" as const;
+}
+
+function mutateResource(
+  resource: Resource,
+  action: BulkAction,
+  payload: BulkActionPayload,
+): void {
+  const r = resource as MutableResource;
+  switch (action) {
+    case "assign-owner":
+      if (payload.ownerId) r.ownerId = payload.ownerId;
+      break;
+    case "move-environment":
+      if (payload.environment) r.environment = payload.environment;
+      break;
+    case "restart":
+      r.status = "healthy";
+      break;
+    case "tag":
+      if (payload.tag?.key) {
+        const key = payload.tag.key;
+        r.tags = [
+          ...resource.tags.filter((t) => t.key !== key),
+          { key, value: payload.tag.value },
+        ];
+      }
+      break;
+    case "approve":
+      if (resource.status === "provisioning") r.status = "healthy";
+      break;
+    case "archive":
+      r.status = "stopped";
+      break;
+    default:
+      break;
+  }
+  r.updatedAt = BACKEND_NOW.toISOString();
+}
+
 /**
- * Records a bulk action against the selected resources to the audit stream and
- * returns how many were affected — mirrors a real batch mutation endpoint.
+ * Applies a bulk action to the selected resources — mutating them in the store
+ * (owner/environment/status/tags) or deleting them — and records each change to
+ * the audit stream. Mirrors a real batch mutation endpoint.
  */
 export async function applyBulkAction(
   action: BulkAction,
   resourceIds: readonly string[],
+  payload: BulkActionPayload = {},
 ): Promise<BulkActionResult> {
   return request(() => {
     const db = getDatabase();
     const actor = db.users[0]!;
-    const auditAction =
-      action === "restart"
-        ? "restart"
-        : action === "delete" || action === "archive"
-          ? "delete"
-          : "update";
-    for (const id of resourceIds) {
-      const resource = db.resources.find((r) => r.id === id);
-      if (!resource) continue;
+    const timestamp = BACKEND_NOW.toISOString();
+
+    const recordAudit = (resource: Resource) => {
       (db.auditLogs as AuditLog[]).unshift({
         id: nextAuditId(),
         actorId: actor.id,
-        action: auditAction,
+        action: auditFor(action),
         target: `${resource.kind}/${resource.id}`,
-        timestamp: BACKEND_NOW.toISOString(),
+        timestamp,
         ip: "10.0.0.1",
         metadata: { bulkAction: action },
       });
+    };
+
+    const targets = resourceIds
+      .map((id) => db.resources.find((r) => r.id === id))
+      .filter((r): r is Resource => Boolean(r));
+
+    if (action === "delete") {
+      const ids = new Set(resourceIds);
+      targets.forEach(recordAudit);
+      const arr = db.resources as Resource[];
+      const remaining = arr.filter((r) => !ids.has(r.id));
+      arr.length = 0;
+      arr.push(...remaining);
+      return { action, count: targets.length };
     }
-    return { action, count: resourceIds.length };
+
+    for (const resource of targets) {
+      mutateResource(resource, action, payload);
+      recordAudit(resource);
+    }
+    return { action, count: targets.length };
   });
 }
 

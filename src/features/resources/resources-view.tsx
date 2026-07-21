@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   applyBulkAction,
   type BulkAction,
+  type BulkActionPayload,
   type FilterField,
   type FilterGroupNode,
   type GridSortKey,
@@ -17,6 +18,10 @@ import {
 } from "@/lib/backend";
 import { moneyCompact } from "@/lib/utils";
 import { useProvisioning } from "@/features/provisioning";
+import {
+  RESOURCE_CREATED_EVENT,
+  type ResourceCreatedDetail,
+} from "@/shared/lib/app-events";
 import { PlusIcon } from "@/shared/icons";
 import { useAsync } from "@/shared/hooks/use-async";
 import {
@@ -40,6 +45,7 @@ import {
   toCsv,
 } from "./helpers";
 import { presetViews, type SavedView } from "./saved-views";
+import { BulkActionDialog } from "./components/bulk-action-dialog";
 import { BulkActionsBar } from "./components/bulk-actions-bar";
 import { ColumnsMenu } from "./components/columns-menu";
 import { FilterPanel, type FilterMode } from "./components/filter-panel";
@@ -81,6 +87,7 @@ export function ResourcesView() {
   const [drawer, setDrawer] = useState<ResourceWithRelations | null>(null);
   const [savedViews, setSavedViews] = useState<SavedView[]>([]);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<BulkAction | null>(null);
 
   const facets = useAsync(() => resourceFacets(), []);
   const summary = useAsync(() => resourcesSummary(), []);
@@ -117,6 +124,23 @@ export function ResourcesView() {
     const t = setTimeout(() => setFeedback(null), 3000);
     return () => clearTimeout(t);
   }, [feedback]);
+
+  // Refresh + surface the new resource when the provisioning wizard creates one.
+  useEffect(() => {
+    const onCreated = (e: Event) => {
+      const detail = (e as CustomEvent<ResourceCreatedDetail>).detail;
+      setSort({ key: "updatedAt", direction: "desc" });
+      setPage(1);
+      grid.reload();
+      summary.reload();
+      facets.reload();
+      if (detail?.name) setFeedback(`Provisioned ${detail.name}`);
+    };
+    window.addEventListener(RESOURCE_CREATED_EVENT, onCreated);
+    return () => window.removeEventListener(RESOURCE_CREATED_EVENT, onCreated);
+    // reload/setState fns are stable; subscribe once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const data = grid.data;
   const flat = data?.kind === "flat" ? data : null;
@@ -184,21 +208,36 @@ export function ResourcesView() {
   const clearSelection = () => setSelected(new Set());
 
   // --- bulk + quick actions ---
-  const onBulkAction = async (action: BulkAction) => {
+  const executeAction = async (
+    action: BulkAction,
+    payload: BulkActionPayload,
+  ) => {
     const ids = [...selected];
     if (ids.length === 0) return;
+    const res = await applyBulkAction(action, ids, payload);
+    clearSelection();
+    grid.reload();
+    summary.reload();
+    facets.reload();
+    const label =
+      BULK_ACTIONS.find((a) => a.action === action)?.label ?? action;
+    setFeedback(`${label} · ${res.count} resource(s)`);
+  };
+
+  const onBulkAction = (action: BulkAction) => {
+    if (selected.size === 0) return;
     if (action === "export-csv") {
       const rows = loaded.filter((r) => selected.has(r.id));
       downloadCsv("helix-resources.csv", toCsv(rows));
       setFeedback(`Exported ${rows.length} resource(s) to CSV`);
       return;
     }
-    const res = await applyBulkAction(action, ids);
-    clearSelection();
-    grid.reload();
-    const label =
-      BULK_ACTIONS.find((a) => a.action === action)?.label ?? action;
-    setFeedback(`${label} · ${res.count} resource(s)`);
+    // Parameterless actions run immediately; the rest collect input / confirm.
+    if (action === "restart" || action === "approve") {
+      void executeAction(action, {});
+      return;
+    }
+    setPendingAction(action);
   };
   const onQuickAction = async (
     action: string,
@@ -359,6 +398,18 @@ export function ResourcesView() {
       </div>
 
       <ResourceDrawer resource={drawer} onClose={() => setDrawer(null)} />
+
+      {pendingAction ? (
+        <BulkActionDialog
+          action={pendingAction}
+          count={selected.size}
+          onConfirm={(a, p) => {
+            void executeAction(a, p);
+            setPendingAction(null);
+          }}
+          onClose={() => setPendingAction(null)}
+        />
+      ) : null}
 
       {feedback ? (
         <div className="fixed inset-x-0 bottom-5 z-50 flex justify-center px-4">
