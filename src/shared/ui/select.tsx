@@ -213,7 +213,11 @@ export function Select({
                   ? window.innerHeight - pos.top
                   : undefined,
                 left: pos.left,
-                width: pos.width,
+                // Grow to fit the longest option (no truncation) while never
+                // shrinking below the trigger or overflowing the viewport.
+                minWidth: pos.width,
+                width: "max-content",
+                maxWidth: Math.max(pos.width, window.innerWidth - pos.left - 8),
                 maxHeight: pos.maxHeight,
               }}
               className="border-border-strong bg-raised z-100 overflow-y-auto rounded-[10px] border p-1 shadow-(--shadow-elev-2)"
@@ -244,7 +248,7 @@ export function Select({
                         isSelected ? "text-text font-medium" : "text-text-2",
                       )}
                     >
-                      <span className="min-w-0 flex-1 truncate">
+                      <span className="flex-1 whitespace-nowrap">
                         {option.label}
                       </span>
                       {isSelected ? (
