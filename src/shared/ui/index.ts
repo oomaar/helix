@@ -20,3 +20,4 @@ export { RadioGroup, type RadioOption } from "./radio-group";
 export { Select, type SelectOption } from "./select";
 export { Checkbox } from "./checkbox";
 export { Pagination } from "./pagination";
+export { Drawer } from "./drawer";
