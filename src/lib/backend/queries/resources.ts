@@ -28,7 +28,7 @@ export type ResourceWithRelations = Resource & {
   providerAccount: ProviderAccount | null;
 };
 
-function hydrate(resource: Resource): ResourceWithRelations {
+export function hydrateResource(resource: Resource): ResourceWithRelations {
   const { users, teams, providers } = getDatabase();
   return {
     ...resource,
@@ -112,7 +112,7 @@ export async function listResources(
     const filtered = applyFilters(getDatabase().resources, filters);
     const sorted = applySort(filtered, sortKey, direction);
     const paged = paginate(sorted, page, pageSize);
-    return { ...paged, items: paged.items.map(hydrate) };
+    return { ...paged, items: paged.items.map(hydrateResource) };
   });
 }
 
@@ -121,7 +121,7 @@ export async function getResource(
 ): Promise<ResourceWithRelations | null> {
   return request(() => {
     const r = getDatabase().resources.find((x) => x.id === id);
-    return r ? hydrate(r) : null;
+    return r ? hydrateResource(r) : null;
   });
 }
 
