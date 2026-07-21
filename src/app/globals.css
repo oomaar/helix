@@ -185,6 +185,15 @@ html:not([data-theme]) body {
   }
 }
 
+@keyframes hx-slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
 /*
  * Print / "Export PDF": hide the app chrome, release the scroll container so
  * the whole screen flows onto the page, and force color rendering so the
