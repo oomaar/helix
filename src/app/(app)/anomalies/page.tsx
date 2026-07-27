@@ -1,10 +1,10 @@
-import { ScreenPlaceholder } from "@/shared/ui/screen-placeholder";
+import type { Metadata } from "next";
+import { AnomaliesView } from "@/features/anomalies";
+
+export const metadata: Metadata = {
+  title: "Cost Anomalies · Helix",
+};
 
 export default function AnomaliesPage() {
-  return (
-    <ScreenPlaceholder
-      title="Cost anomalies"
-      description="Automatically detected cost spikes and unusual usage."
-    />
-  );
+  return <AnomaliesView />;
 }

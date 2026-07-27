@@ -5,6 +5,11 @@ export {
   type StackDatum,
   type StackSeries,
 } from "./stacked-bar-chart";
+export {
+  GroupedBarChart,
+  type GroupedDatum,
+  type GroupedSeries,
+} from "./grouped-bar-chart";
 export { Heatmap, type HeatmapRow } from "./heatmap";
 export { Sparkline } from "./sparkline";
 export { ChartTooltip, type TooltipRow } from "./chart-tooltip";

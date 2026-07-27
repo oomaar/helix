@@ -6,6 +6,8 @@ export * from "./resource-grid";
 export * from "./resource-detail";
 export * from "./operations";
 export * from "./investigation";
+export * from "./analytics";
+export * from "./anomalies";
 export * from "./budgets";
 export * from "./incidents";
 export * from "./audit";
