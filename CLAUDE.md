@@ -393,22 +393,34 @@ Current Goal:
 
 ```
 Close the operational loop: from an anomaly on a resource to triage,
-approval and remediation.
+approval and remediation & Simulate real operational workflows.
 ```
 
 Current Checklist:
 
 ```
-Operations Center (/operations)
+Phase 4.1: Operations Center (/operations)
 - Live incidents list, on-call, SEV summary
 - Pending approvals queue (incl. provisioning requests routed for FinOps)
 - Operational task queue, MTTA / queue-depth stats
 
-Incident investigation war-room (/investigations/[id])
+Phase 4.2: Incident investigation war-room (/investigations/[id])
 - Signal timeline, blast radius / dependency graph
 - Config diff, suggested remediation runbook (executable steps)
 - Linked entities (resource, anomaly, deploy, audit events)
 - Wire the resource-detail anomaly callout to a real investigation
+
+Phase - 4.3:
+
+- Operations Center
+- Incidents
+- Pending approvals
+- Automation runs
+- Jobs
+- Rollbacks
+- Retry actions
+- Workflow status
+- Live queues
 ```
 
 ---
