@@ -1,10 +1,10 @@
-import { ScreenPlaceholder } from "@/shared/ui/screen-placeholder";
+import type { Metadata } from "next";
+import { OperationsView } from "@/features/operations";
+
+export const metadata: Metadata = {
+  title: "Operations Center · Helix",
+};
 
 export default function OperationsPage() {
-  return (
-    <ScreenPlaceholder
-      title="Operations Center"
-      description="Runbooks, approvals and task queues."
-    />
-  );
+  return <OperationsView />;
 }
