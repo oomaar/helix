@@ -3,6 +3,7 @@
 import { type ReactNode, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
+import { useFocusTrap } from "@/shared/hooks/use-focus-trap";
 
 type DialogProps = {
   open: boolean;
@@ -29,6 +30,7 @@ export function Dialog({
   align = "top",
 }: DialogProps) {
   const restoreRef = useRef<HTMLElement | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -49,6 +51,8 @@ export function Dialog({
     };
   }, [open, onClose]);
 
+  useFocusTrap(panelRef, open);
+
   // The portal only ever renders after a client interaction opens it, so it
   // never runs during SSR — no mounted gate needed.
   if (!open || typeof document === "undefined") return null;
@@ -66,11 +70,13 @@ export function Dialog({
         aria-hidden="true"
       />
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}
+        tabIndex={-1}
         className={cn(
-          "border-border-strong bg-raised rounded-panel relative z-10 w-full max-w-140 border shadow-(--shadow-elev-2)",
+          "border-border-strong bg-raised rounded-panel relative z-10 w-full max-w-140 border shadow-(--shadow-elev-2) outline-none",
           className,
         )}
       >

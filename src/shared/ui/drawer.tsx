@@ -3,6 +3,7 @@
 import { type ReactNode, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
+import { useFocusTrap } from "@/shared/hooks/use-focus-trap";
 
 type DrawerProps = {
   open: boolean;
@@ -25,6 +26,7 @@ export function Drawer({
   className,
 }: DrawerProps) {
   const restoreRef = useRef<HTMLElement | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -45,6 +47,8 @@ export function Drawer({
     };
   }, [open, onClose]);
 
+  useFocusTrap(panelRef, open);
+
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
@@ -55,12 +59,14 @@ export function Drawer({
         aria-hidden="true"
       />
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}
+        tabIndex={-1}
         style={{ animation: "hx-slide-in-right 0.2s ease" }}
         className={cn(
-          "bg-raised border-border-strong relative z-10 flex h-full w-full max-w-md flex-col border-l shadow-(--shadow-elev-2)",
+          "bg-raised border-border-strong relative z-10 flex h-full w-full max-w-md flex-col border-l shadow-(--shadow-elev-2) outline-none",
           className,
         )}
       >
