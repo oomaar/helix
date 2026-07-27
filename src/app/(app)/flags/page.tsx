@@ -1,10 +1,10 @@
-import { ScreenPlaceholder } from "@/shared/ui/screen-placeholder";
+import type { Metadata } from "next";
+import { FlagsView } from "@/features/flags";
+
+export const metadata: Metadata = {
+  title: "Feature Flags · Helix",
+};
 
 export default function FlagsPage() {
-  return (
-    <ScreenPlaceholder
-      title="Feature flags"
-      description="Runtime flags with targeting and rollout controls."
-    />
-  );
+  return <FlagsView />;
 }
