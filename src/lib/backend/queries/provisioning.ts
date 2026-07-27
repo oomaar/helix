@@ -5,6 +5,8 @@ import type {
   Environment,
   Provider,
   Region,
+  Resource,
+  ResourceKind,
 } from "../models";
 import { request } from "../client";
 import { getDatabase } from "../store";
@@ -29,9 +31,9 @@ export type ProvisionInput = {
 
 export type ProvisionResult = {
   requestId: string;
+  resourceId: string;
   requiresApproval: boolean;
   estimatedMonthlyCost: number;
-  /** Remaining monthly budget for the owning team at submit time. */
   budgetRemaining: number | null;
 };
 
@@ -39,12 +41,26 @@ const nextRequestId = idFactory("req");
 const nextActivityId = idFactory("pact");
 const nextAuditId = idFactory("paud");
 
+// Offset well past the seeded res_0001…res_0060 range so ids never collide.
+let provResourceSeq = 0;
+function nextResourceId(): string {
+  provResourceSeq += 1;
+  return `res_${String(9000 + provResourceSeq).padStart(4, "0")}`;
+}
+
+const KIND_BY_TYPE: Readonly<Record<string, ResourceKind>> = {
+  "rds-postgres": "database",
+  "ec2-asg": "compute",
+  "elasticache-redis": "cache",
+  opensearch: "cluster",
+};
+
 /**
  * Simulates POSTing a provisioning request. Requests that would exceed the
- * owning team's remaining monthly budget are routed for FinOps approval. The
- * action is recorded to the shared activity + audit streams so the rest of the
- * app (e.g. the dashboard's Recent activity) stays consistent — exactly what a
- * real create endpoint would trigger downstream.
+ * owning team's remaining monthly budget are routed for FinOps approval. A real
+ * resource is created in `provisioning` status so it shows up immediately in
+ * the Resources grid, and the action is recorded to the shared activity + audit
+ * streams — exactly what a real create endpoint would trigger downstream.
  */
 export async function submitProvisionRequest(
   input: ProvisionInput,
@@ -65,11 +81,37 @@ export async function submitProvisionRequest(
     const actor = db.users[0]!;
     const timestamp = BACKEND_NOW.toISOString();
 
+    // --- create the resource ---
+    const providerAccount =
+      db.providers.find((p) => p.provider === input.provider) ??
+      db.providers[0];
+    const resource: Resource = {
+      id: nextResourceId(),
+      name: input.name,
+      kind: KIND_BY_TYPE[input.resourceType] ?? "compute",
+      type: input.instanceClass,
+      status: "provisioning",
+      providerAccountId: providerAccount?.id ?? "",
+      region: input.region,
+      environment: input.environment,
+      ownerId: team?.ownerId ?? actor.id,
+      teamId: input.teamId,
+      instances: 1,
+      cpu: 9,
+      mem: 14,
+      monthlyCost: input.estimatedMonthlyCost,
+      tags: input.tags.map((t) => ({ key: t.key, value: t.value })),
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+    (db.resources as Resource[]).unshift(resource);
+
+    // --- record activity + audit ---
     const activity: Activity = {
       id: nextActivityId(),
       kind: "provision",
       actorId: actor.id,
-      targetId: requestId,
+      targetId: resource.id,
       targetLabel: input.name,
       timestamp,
       message: requiresApproval
@@ -82,7 +124,7 @@ export async function submitProvisionRequest(
       id: nextAuditId(),
       actorId: actor.id,
       action: "provision",
-      target: `${input.resourceType}/${requestId}`,
+      target: `${resource.kind}/${resource.id}`,
       timestamp,
       ip: "10.0.0.1",
       metadata: {
@@ -95,6 +137,7 @@ export async function submitProvisionRequest(
 
     return {
       requestId,
+      resourceId: resource.id,
       requiresApproval,
       estimatedMonthlyCost: input.estimatedMonthlyCost,
       budgetRemaining,

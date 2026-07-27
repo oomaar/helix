@@ -306,56 +306,109 @@ shared/
 
 ---
 
+# Completed Phases
+
+## Phase 1 — Foundation ✅
+
+Prepared the project to scale before writing features.
+
+```
+- Feature-based architecture, App Router routing, layout shell
+- Design tokens (color, typography, spacing), light/dark theme system
+  (no-flash init script via useSyncExternalStore)
+- Icon system + reusable UI primitives (Card, Button, Badge, Input, Kbd,
+  StatusDot, Avatar, Divider, EmptyState, Skeleton, …)
+- Connected fake backend: relational models, deterministic seed, in-memory
+  store, async query layer + simulated latency, utilities
+- Tooling: ESLint, Prettier, Husky, lint-staged
+```
+
+## Phase 2 — Application Shell ✅
+
+Completed the reusable framework the whole product sits inside, then proved it
+out with the first vertical slice.
+
+```
+Shell
+- Sidebar, top bar, breadcrumbs, global layout, navigation state
+- Command palette (⌘K + search, fuzzy nav/actions, keyboard nav)
+- Notifications menu, user menu, environment switcher (Popover)
+- Overlay primitives: Popover, Dialog (portal/scroll-lock/focus-restore), menu
+- Responsive shell (sidebar → drawer, top-bar reflow, h-dvh) + branded favicon
+
+First vertical slice — Dashboard ("Cloud Operations Overview")
+- 7 panels with per-panel loading/empty/error + responsive grid
+- Reusable zero-dep SVG charts: Area (+forecast), Donut, StackedBar, Heatmap,
+  Sparkline (theme-aware, hover tooltips, responsive useMeasure)
+- Metrics query layer + useAsync hook (all derived from the seeded graph)
+- Export dashboard → PDF (theme-preserving print)
+
+Forms system + provisioning
+- Form primitives: Field, custom Select (portal listbox), Switch, RadioGroup
+- 4-step "Provision resource" wizard: validation, conditional config,
+  repeatable groups, review + confirmation; fake submit routes for FinOps
+  approval and records to the activity/audit streams
+```
+
+## Phase 3 — Resource Management ✅
+
+The heart of the product — a full enterprise data grid plus the resource
+detail screen.
+
+```
+Resources data grid (/resources)
+- Table with sorting, pagination, search, column visibility, sticky header
+- Filters: Simple quick-filters + Advanced filter builder (conditions,
+  AND/OR, nestable groups) over one recursive filter-tree model
+- Saved views (presets + save-current) + active-filter chips
+- Grouping (provider/status/env/team/type), row expansion
+- Bulk selection + functional bulk actions (assign owner, move env, restart,
+  tag, approve, export CSV, archive, delete) — mutate the store + audit
+- Right drawer preview (CPU sparkline) → full detail
+
+Resource detail (/resources/[id])
+- Client-rendered (shares the mutated store): header with real Restart,
+  metrics (CPU 8h + cost 8mo charts), configuration, related resources,
+  activity/audit timeline, access control, attachments, anomaly callout
+
+Backend + primitives
+- resource-grid + resource-detail query layers (filter eval, grouping,
+  facets, bulk mutations, detail bundle)
+- Provisioning now creates real resources that appear in the grid
+- New shared: Checkbox, Pagination, Drawer, content-width custom Select,
+  useFocusTrap (Dialog/Drawer focus trap + restore)
+```
+
+---
+
 # Current Phase
 
 Current Phase:
 
 ```
-Phase 1 — Application Shell
+Phase 4 — Operations & Incident Investigation
 ```
 
 Current Goal:
 
 ```
-Complete the reusable application framework the whole product sits inside.
+Close the operational loop: from an anomaly on a resource to triage,
+approval and remediation.
 ```
 
-Status: ✅ Complete
-
-Delivered (shell):
+Current Checklist:
 
 ```
-- Sidebar, Header, Breadcrumbs, Environment switcher, global layout,
-  navigation state, dark / light mode (from Phase 0)
-- Command Palette (shared/command): ⌘K / Ctrl-K + header search field,
-  fuzzy search over navigation + quick actions, full keyboard nav,
-  portal Dialog (focus restore, scroll lock, Escape/backdrop dismiss)
-- Notifications panel (shared/layout/notifications-menu): unread badge,
-  mark-all-read, derived from incidents + budgets + activities
-- User menu (shared/layout/user-menu): profile, command palette, theme,
-  sign out
-- Reusable overlay primitives (shared/ui): Popover (outside-click / Escape),
-  Dialog, Menu items
-```
+Operations Center (/operations)
+- Live incidents list, on-call, SEV summary
+- Pending approvals queue (incl. provisioning requests routed for FinOps)
+- Operational task queue, MTTA / queue-depth stats
 
-Also delivered — first vertical slice on top of the shell:
-
-```
-- Dashboard feature (features/dashboard) — "Cloud Operations Overview",
-  faithful to the approved design
-- Reusable SVG chart primitives (shared/charts): area+forecast, donut,
-  stacked bar, heatmap, sparkline — zero deps, theme-aware, hover tooltips,
-  responsive measuring (useMeasure)
-- Metrics query layer (lib/backend/queries/metrics.ts) + useAsync hook
-  (loading / empty / error / retry states), all derived from the seeded graph
-```
-
-Next Phase:
-
-```
-Phase 2 — Resources: enterprise data grid (sorting, pagination, search,
-filter builder, bulk selection + actions, column visibility, saved views,
-row detail) + resource detail screen.
+Incident investigation war-room (/investigations/[id])
+- Signal timeline, blast radius / dependency graph
+- Config diff, suggested remediation runbook (executable steps)
+- Linked entities (resource, anomaly, deploy, audit events)
+- Wire the resource-detail anomaly callout to a real investigation
 ```
 
 ---

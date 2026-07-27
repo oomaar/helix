@@ -10,3 +10,18 @@ export function emitOpenProvisioning(): void {
     window.dispatchEvent(new Event(PROVISION_EVENT));
   }
 }
+
+export const RESOURCE_CREATED_EVENT = "helix:resource-created";
+
+export type ResourceCreatedDetail = { name: string };
+
+/** Fired after a provisioning request creates a resource, so views can refresh. */
+export function emitResourceCreated(name: string): void {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent<ResourceCreatedDetail>(RESOURCE_CREATED_EVENT, {
+        detail: { name },
+      }),
+    );
+  }
+}
