@@ -282,7 +282,8 @@ function buildAnomaly(r: ResourceWithRelations): ResourceAnomaly | null {
       title: "Cost & utilization anomaly",
       summary:
         "Spend up 214% over 24h baseline. Connection-pool saturation likely driving read-replica autoscale.",
-      href: `/investigations/${anomalyId}`,
+      // No incident opened yet for this resource — route to Operations to triage.
+      href: "/operations",
     };
   }
   return null;

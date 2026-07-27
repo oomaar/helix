@@ -4,6 +4,8 @@ export * from "./providers";
 export * from "./resources";
 export * from "./resource-grid";
 export * from "./resource-detail";
+export * from "./operations";
+export * from "./investigation";
 export * from "./budgets";
 export * from "./incidents";
 export * from "./audit";
