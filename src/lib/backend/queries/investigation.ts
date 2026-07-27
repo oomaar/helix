@@ -62,6 +62,10 @@ export type ConfigDiff = {
   service: string;
   fromVersion: string;
   toVersion: string;
+  suspect: string;
+  added: number;
+  removed: number;
+  rootCause: string;
   lines: readonly DiffLine[];
 };
 
@@ -85,6 +89,7 @@ export type Investigation = {
   summary: string;
   resource: ResourceWithRelations | null;
   ownerName: string;
+  participants: readonly { id: string; name: string }[];
   detectedAt: string;
   signals: readonly InvestigationSignal[];
   timeline: readonly TimelinePoint[];
@@ -180,19 +185,27 @@ function buildBlastRadius(
 // --- config diff -----------------------------------------------------------
 
 function buildConfigDiff(root: ResourceWithRelations | null): ConfigDiff {
+  const service = root?.name ?? "orders-svc";
+  const lines: DiffLine[] = [
+    { type: "context", text: '  "pool": {' },
+    { type: "context", text: '    "max": 20,' },
+    { type: "remove", text: '    "preparedStatements": true' },
+    { type: "add", text: '    "preparedStatements": false,' },
+    { type: "add", text: '    "eagerLoad": false,' },
+    { type: "add", text: '    "lazyRelations": true' },
+    { type: "context", text: "  }" },
+  ];
   return {
     file: "connection.json",
-    service: root?.name ?? "orders-svc",
+    service,
     fromVersion: "v2.7.4",
     toVersion: "v2.8.0",
-    lines: [
-      { type: "context", text: '  "pool": {' },
-      { type: "context", text: '    "max": 20,' },
-      { type: "remove", text: '    "preparedStatements": true' },
-      { type: "add", text: '    "preparedStatements": false,' },
-      { type: "add", text: '    "eagerLoad": false' },
-      { type: "context", text: "  }" },
-    ],
+    suspect: `${service} v2.8.0`,
+    added: lines.filter((l) => l.type === "add").length,
+    removed: lines.filter((l) => l.type === "remove").length,
+    rootCause:
+      "Disabling prepared statements combined with eagerLoad:false introduced an N+1 query pattern, saturating the connection pool under flash-sale load.",
+    lines,
   };
 }
 
@@ -225,6 +238,10 @@ export async function getInvestigation(
     const base = db.resources.find((r) => r.id === inc.resourceId);
     const resource = base ? hydrateResource(base) : null;
     const owner = db.users.find((u) => u.id === inc.ownerId);
+    const participants = inc.participants
+      .map((pid) => db.users.find((u) => u.id === pid))
+      .filter((u): u is NonNullable<typeof u> => Boolean(u))
+      .map((u) => ({ id: u.id, name: u.name }));
     const auditCount = db.auditLogs.filter((a) =>
       a.target.includes(inc.resourceId),
     ).length;
@@ -253,6 +270,7 @@ export async function getInvestigation(
       summary: inc.summary,
       resource,
       ownerName: owner?.name ?? "Unassigned",
+      participants,
       detectedAt: inc.detectedAt,
       signals: buildSignals(inc),
       timeline: buildTimeline(inc),
