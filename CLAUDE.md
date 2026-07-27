@@ -401,6 +401,32 @@ Investigations list (/investigations) — search / status / severity → war-roo
 Wired the resource-detail anomaly callout to the real incident war-room
 ```
 
+## Phase 5 — Analytics ✅
+
+Enterprise cost reporting across three connected screens, plus a new grouped-bar
+chart primitive.
+
+```
+Cost Analytics (/analytics)
+- Group-by attribution (team / provider / env / type): this month vs last
+  (grouped bars), blended 12-month trend (area), spend by resource type
+  (donut), resource distribution by cost band (bars)
+- Optimization recommendations (ranked: terminate / rightsize / schedule /
+  commit, $/mo savings + apply) · Export report (theme-preserving PDF print)
+
+Cost Anomalies (/anomalies)
+- At-risk summary + filterable table (id, resource, severity, delta, baseline,
+  current, status) · Detection-rules dialog
+
+Budgets (/budgets)
+- Summary + period filter · budget cards (spent-of-limit with alert-threshold
+  ticks, status) · New / Edit budget dialog (spend derived from team spend)
+
+Shared
+- New GroupedBarChart primitive (side-by-side/comparison bars)
+- analytics / anomalies query layers + budgets summary & create/update mutations
+```
+
 ---
 
 # Current Phase
@@ -408,36 +434,36 @@ Wired the resource-detail anomaly callout to the real incident war-room
 Current Phase:
 
 ```
-Phase 5 — Analytics
+Phase 6 - Enterprise Administration
 ```
 
 Current Goal:
 
 ```
-Show enterprise reporting — spend attribution, trends, forecasts and
-optimization across teams and providers.
-```
-
-Current Checklist:
+Organization management.
 
 ```
-Cost Analytics (/analytics)
-- Charts: line, area, bar, grouped/comparison bar, donut, heatmap
-  (reuse + extend the shared zero-dep SVG chart primitives)
-- Spend attribution with a Group-by dimension (team / provider / service / env)
-- Blended monthly spend trend, trailing 12 months (line / area)
-- Spend by team — this month vs last (comparison bars)
-- Spend by resource type + resource distribution by cost band
-- Trend analysis, cost analysis, forecasts
-- Optimization recommendations (ranked, $/mo savings + apply action)
-- Export report (reuse the theme-preserving PDF print)
-- Per-panel loading / empty / error + responsive
 
-Related cost screens (this phase or a 5.x)
-- Cost Anomalies (/anomalies): ML-detected deviations table
-  (id, resource, severity, delta, baseline, current, status) + detection rules
-- Budgets (/budgets): team allocations, spent-of-limit, over-budget alerts,
-  new / edit budget
+Modules:
+
+```
+- Users
+- Roles
+- Permissions
+- Feature Flags
+- Integrations
+```
+
+Tasks:
+
+```
+- User management
+- Invite users
+- Role management
+- Permission matrix
+- Feature flags
+- Integrations
+- Organization settings
 ```
 
 ---
