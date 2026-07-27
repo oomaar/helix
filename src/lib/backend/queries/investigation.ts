@@ -17,6 +17,7 @@ import { request } from "../client";
 import { getDatabase } from "../store";
 import { BACKEND_NOW } from "./metrics";
 import { hydrateResource, type ResourceWithRelations } from "./resources";
+import type { IncidentWithRelations } from "./incidents";
 
 // --- deterministic helpers -------------------------------------------------
 
@@ -261,6 +262,71 @@ export async function getInvestigation(
       remediations: buildRemediations(inc.id),
       linked,
     };
+  });
+}
+
+// --- list ------------------------------------------------------------------
+
+export type InvestigationStatusFilter = "all" | "open" | "resolved";
+
+export type InvestigationFilters = {
+  search?: string;
+  status?: InvestigationStatusFilter;
+  severity?: Severity | "all";
+};
+
+const OPEN_STATUSES = new Set<IncidentStatus>([
+  "detected",
+  "investigating",
+  "mitigated",
+]);
+const SEV_ORDER: Record<Severity, number> = { sev1: 0, sev2: 1, sev3: 2 };
+
+function hydrateIncidentFull(inc: Incident): IncidentWithRelations {
+  const { resources, users } = getDatabase();
+  return {
+    ...inc,
+    resource: resources.find((r) => r.id === inc.resourceId) ?? null,
+    owner: users.find((u) => u.id === inc.ownerId) ?? null,
+    participants: inc.participants
+      .map((id) => users.find((u) => u.id === id))
+      .filter((u): u is NonNullable<typeof u> => Boolean(u)),
+  };
+}
+
+export async function listInvestigations(
+  filters: InvestigationFilters = {},
+): Promise<readonly IncidentWithRelations[]> {
+  return request(() => {
+    const { search = "", status = "all", severity = "all" } = filters;
+    const q = search.trim().toLowerCase();
+
+    const rows = getDatabase()
+      .incidents.map(hydrateIncidentFull)
+      .filter((inc) => {
+        if (status === "open" && !OPEN_STATUSES.has(inc.status)) return false;
+        if (status === "resolved" && inc.status !== "resolved") return false;
+        if (severity !== "all" && inc.severity !== severity) return false;
+        if (q) {
+          const hay =
+            `${inc.title} ${inc.resource?.name ?? ""} ${inc.owner?.name ?? ""} ${inc.id}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+
+    return rows.sort((a, b) => {
+      const aOpen = OPEN_STATUSES.has(a.status) ? 0 : 1;
+      const bOpen = OPEN_STATUSES.has(b.status) ? 0 : 1;
+      if (aOpen !== bOpen) return aOpen - bOpen;
+      if (aOpen === 0) {
+        const rank = SEV_ORDER[a.severity] - SEV_ORDER[b.severity];
+        return rank !== 0 ? rank : b.detectedAt.localeCompare(a.detectedAt);
+      }
+      return (b.resolvedAt ?? b.detectedAt).localeCompare(
+        a.resolvedAt ?? a.detectedAt,
+      );
+    });
   });
 }
 

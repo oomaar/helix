@@ -1,10 +1,10 @@
-import { ScreenPlaceholder } from "@/shared/ui/screen-placeholder";
+import type { Metadata } from "next";
+import { InvestigationsListView } from "@/features/investigation";
+
+export const metadata: Metadata = {
+  title: "Investigations · Helix",
+};
 
 export default function InvestigationsPage() {
-  return (
-    <ScreenPlaceholder
-      title="Investigations"
-      description="Active and past incident investigations."
-    />
-  );
+  return <InvestigationsListView />;
 }
