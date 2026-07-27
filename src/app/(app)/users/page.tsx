@@ -1,10 +1,10 @@
-import { ScreenPlaceholder } from "@/shared/ui/screen-placeholder";
+import type { Metadata } from "next";
+import { UsersView } from "@/features/users";
+
+export const metadata: Metadata = {
+  title: "Users & Roles · Helix",
+};
 
 export default function UsersPage() {
-  return (
-    <ScreenPlaceholder
-      title="Users & roles"
-      description="Members, roles and permission matrix."
-    />
-  );
+  return <UsersView />;
 }
