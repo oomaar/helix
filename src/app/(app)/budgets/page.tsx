@@ -1,10 +1,10 @@
-import { ScreenPlaceholder } from "@/shared/ui/screen-placeholder";
+import type { Metadata } from "next";
+import { BudgetsView } from "@/features/budgets";
+
+export const metadata: Metadata = {
+  title: "Budgets · Helix",
+};
 
 export default function BudgetsPage() {
-  return (
-    <ScreenPlaceholder
-      title="Budgets"
-      description="Configure, track and enforce cost budgets."
-    />
-  );
+  return <BudgetsView />;
 }
