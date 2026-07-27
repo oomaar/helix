@@ -1,6 +1,6 @@
 import type { ConfigDiff, DiffLine } from "@/lib/backend";
 import { cn } from "@/lib/utils";
-import { Card, CardBody, CardHeader, CardTitle } from "@/shared/ui";
+import { Badge, Card, CardBody, CardHeader, CardTitle } from "@/shared/ui";
 
 type ConfigDiffPanelProps = { diff: ConfigDiff };
 
@@ -20,14 +20,23 @@ export function ConfigDiffPanel({ diff }: ConfigDiffPanelProps) {
     <Card as="section">
       <CardHeader>
         <CardTitle>Config diff</CardTitle>
-        <span className="text-text-3 ml-auto font-mono text-[11px]">
-          {diff.fromVersion} → {diff.toVersion}
-        </span>
+        <div className="ml-auto flex items-center gap-2">
+          <Badge tone="danger">SUSPECT</Badge>
+          <span className="text-text-3 font-mono text-[11px]">
+            {diff.fromVersion} → {diff.toVersion}
+          </span>
+        </div>
       </CardHeader>
       <CardBody>
         <div className="border-border-token overflow-hidden rounded-lg border">
-          <div className="bg-surface-2 border-border-token text-text-3 border-b px-3 py-1.5 font-mono text-[11px]">
-            {diff.service} · {diff.file}
+          <div className="bg-surface-2 border-border-token text-text-3 flex items-center justify-between gap-2 border-b px-3 py-1.5 font-mono text-[11px]">
+            <span className="truncate">
+              {diff.suspect} · {diff.file}
+            </span>
+            <span className="flex-none">
+              <span className="text-success">+{diff.added}</span>{" "}
+              <span className="text-danger">−{diff.removed}</span>
+            </span>
           </div>
           <pre className="overflow-x-auto py-1 font-mono text-[11.5px] leading-relaxed">
             {diff.lines.map((line, i) => (
@@ -40,6 +49,10 @@ export function ConfigDiffPanel({ diff }: ConfigDiffPanelProps) {
             ))}
           </pre>
         </div>
+        <p className="text-text-2 mt-3 text-[12px]">
+          <span className="text-danger font-semibold">Root cause. </span>
+          {diff.rootCause}
+        </p>
       </CardBody>
     </Card>
   );

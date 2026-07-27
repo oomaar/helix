@@ -16,11 +16,12 @@ import { LinkedEntities } from "./components/linked-entities";
 import { RemediationRunbook } from "./components/remediation-runbook";
 import { SignalStats } from "./components/signal-stats";
 import { SignalTimeline } from "./components/signal-timeline";
+import { WarRoom } from "./components/war-room";
 
 export function InvestigationView({ id }: { id: string }) {
   const inv = useAsync(() => getInvestigation(id), [id]);
   const [busy, setBusy] = useState(false);
-  const [executed, setExecuted] = useState<ReadonlySet<string>>(new Set());
+  const [actions, setActions] = useState<RemediationStep[]>([]);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,8 +42,17 @@ export function InvestigationView({ id }: { id: string }) {
   };
 
   const onExecute = (step: RemediationStep) => {
-    setExecuted((prev) => new Set(prev).add(step.id));
+    setActions((prev) =>
+      prev.some((a) => a.id === step.id) ? prev : [...prev, step],
+    );
     setFeedback(`Executing: ${step.title}`);
+  };
+
+  const onUndo = () => {
+    const last = actions[actions.length - 1];
+    if (!last) return;
+    setActions((prev) => prev.slice(0, -1));
+    setFeedback(`Reverted: ${last.title}`);
   };
 
   const wrap = "mx-auto max-w-350 px-4 py-5 md:p-[22px_26px_60px]";
@@ -116,10 +126,15 @@ export function InvestigationView({ id }: { id: string }) {
             <RemediationRunbook
               name={d.runbookName}
               steps={d.remediations}
-              executed={executed}
+              executed={new Set(actions.map((a) => a.id))}
               onExecute={onExecute}
             />
             <LinkedEntities linked={d.linked} />
+            <WarRoom
+              participants={d.participants}
+              actions={actions}
+              onUndo={onUndo}
+            />
           </div>
         </div>
       </div>
