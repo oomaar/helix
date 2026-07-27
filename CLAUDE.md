@@ -350,6 +350,35 @@ Forms system + provisioning
   approval and records to the activity/audit streams
 ```
 
+## Phase 3 — Resource Management ✅
+
+The heart of the product — a full enterprise data grid plus the resource
+detail screen.
+
+```
+Resources data grid (/resources)
+- Table with sorting, pagination, search, column visibility, sticky header
+- Filters: Simple quick-filters + Advanced filter builder (conditions,
+  AND/OR, nestable groups) over one recursive filter-tree model
+- Saved views (presets + save-current) + active-filter chips
+- Grouping (provider/status/env/team/type), row expansion
+- Bulk selection + functional bulk actions (assign owner, move env, restart,
+  tag, approve, export CSV, archive, delete) — mutate the store + audit
+- Right drawer preview (CPU sparkline) → full detail
+
+Resource detail (/resources/[id])
+- Client-rendered (shares the mutated store): header with real Restart,
+  metrics (CPU 8h + cost 8mo charts), configuration, related resources,
+  activity/audit timeline, access control, attachments, anomaly callout
+
+Backend + primitives
+- resource-grid + resource-detail query layers (filter eval, grouping,
+  facets, bulk mutations, detail bundle)
+- Provisioning now creates real resources that appear in the grid
+- New shared: Checkbox, Pagination, Drawer, content-width custom Select,
+  useFocusTrap (Dialog/Drawer focus trap + restore)
+```
+
 ---
 
 # Current Phase
@@ -357,28 +386,29 @@ Forms system + provisioning
 Current Phase:
 
 ```
-Phase 3 — Resource Management
+Phase 4 — Operations & Incident Investigation
 ```
 
 Current Goal:
 
 ```
-The heart of the product.
+Close the operational loop: from an anomaly on a resource to triage,
+approval and remediation.
 ```
 
+Current Checklist:
+
 ```
-- Resources table
-- Pagination
-- Sorting
-- Search
-- Filters
-- Saved views
-- Grouping
-- Column visibility
-- Bulk selection
-- Bulk actions
-- Row expansion
-- Right drawer preview
+Operations Center (/operations)
+- Live incidents list, on-call, SEV summary
+- Pending approvals queue (incl. provisioning requests routed for FinOps)
+- Operational task queue, MTTA / queue-depth stats
+
+Incident investigation war-room (/investigations/[id])
+- Signal timeline, blast radius / dependency graph
+- Config diff, suggested remediation runbook (executable steps)
+- Linked entities (resource, anomaly, deploy, audit events)
+- Wire the resource-detail anomaly callout to a real investigation
 ```
 
 ---
