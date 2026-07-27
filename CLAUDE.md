@@ -379,6 +379,28 @@ Backend + primitives
   useFocusTrap (Dialog/Drawer focus trap + restore)
 ```
 
+## Phase 4 — Operations & Incident Investigation ✅
+
+Simulated the operational loop end to end — anomaly → triage → war-room →
+remediation → resolution.
+
+```
+Operations Center (/operations)
+- Headline stats (open incidents, pending approvals, queue depth, MTTA),
+  on-call + active-SEV badge
+- Active incidents list, FinOps approval queue (functional Approve / Decline),
+  derived operational task queue
+
+Incident war-room (/investigations/[id])
+- Signal stats, lifecycle timeline, dependency & blast radius
+- Config diff (+/- counts, SUSPECT tag, root-cause note), remediation runbook
+  (executable steps), linked entities, War room (participants + Undo)
+- Escalate / Share / Declare resolved (resolveIncident mutation)
+
+Investigations list (/investigations) — search / status / severity → war-room
+Wired the resource-detail anomaly callout to the real incident war-room
+```
+
 ---
 
 # Current Phase
@@ -386,41 +408,36 @@ Backend + primitives
 Current Phase:
 
 ```
-Phase 4 — Operations & Incident Investigation
+Phase 5 — Analytics
 ```
 
 Current Goal:
 
 ```
-Close the operational loop: from an anomaly on a resource to triage,
-approval and remediation & Simulate real operational workflows.
+Show enterprise reporting — spend attribution, trends, forecasts and
+optimization across teams and providers.
 ```
 
 Current Checklist:
 
 ```
-Phase 4.1: Operations Center (/operations)
-- Live incidents list, on-call, SEV summary
-- Pending approvals queue (incl. provisioning requests routed for FinOps)
-- Operational task queue, MTTA / queue-depth stats
+Cost Analytics (/analytics)
+- Charts: line, area, bar, grouped/comparison bar, donut, heatmap
+  (reuse + extend the shared zero-dep SVG chart primitives)
+- Spend attribution with a Group-by dimension (team / provider / service / env)
+- Blended monthly spend trend, trailing 12 months (line / area)
+- Spend by team — this month vs last (comparison bars)
+- Spend by resource type + resource distribution by cost band
+- Trend analysis, cost analysis, forecasts
+- Optimization recommendations (ranked, $/mo savings + apply action)
+- Export report (reuse the theme-preserving PDF print)
+- Per-panel loading / empty / error + responsive
 
-Phase 4.2: Incident investigation war-room (/investigations/[id])
-- Signal timeline, blast radius / dependency graph
-- Config diff, suggested remediation runbook (executable steps)
-- Linked entities (resource, anomaly, deploy, audit events)
-- Wire the resource-detail anomaly callout to a real investigation
-
-Phase - 4.3:
-
-- Operations Center
-- Incidents
-- Pending approvals
-- Automation runs
-- Jobs
-- Rollbacks
-- Retry actions
-- Workflow status
-- Live queues
+Related cost screens (this phase or a 5.x)
+- Cost Anomalies (/anomalies): ML-detected deviations table
+  (id, resource, severity, delta, baseline, current, status) + detection rules
+- Budgets (/budgets): team allocations, spent-of-limit, over-budget alerts,
+  new / edit budget
 ```
 
 ---

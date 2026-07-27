@@ -1,10 +1,10 @@
-import { ScreenPlaceholder } from "@/shared/ui/screen-placeholder";
+import type { Metadata } from "next";
+import { AnalyticsView } from "@/features/analytics";
+
+export const metadata: Metadata = {
+  title: "Cost Analytics · Helix",
+};
 
 export default function AnalyticsPage() {
-  return (
-    <ScreenPlaceholder
-      title="Analytics"
-      description="Deep-dive into cost, utilization and reliability trends."
-    />
-  );
+  return <AnalyticsView />;
 }
