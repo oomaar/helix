@@ -463,15 +463,28 @@ Backend
 Current Phase:
 
 ```
-TBD — planned roadmap (Phases 1–6) complete
+Phase 7 - Audit & Governance
 ```
 
 Current Goal:
 
 ```
-Remaining placeholder screen: Audit Log (/audit) — immutable event stream
-(the "Govern" nav item, referenced by the product story). Otherwise pick
-polish/QA or a new area.
+Demonstrate enterprise governance.
+```
+
+Tasks:
+
+- Audit logs
+- Timeline
+- JSON diff
+- Before / After
+- Filters
+- Search
+- Event Details
+- History
+
+```
+
 ```
 
 ---
