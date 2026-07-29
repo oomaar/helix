@@ -119,3 +119,31 @@ export async function inviteMember(input: InviteInput): Promise<Member> {
     return { ...user, team, mfa: false };
   });
 }
+
+// --- member mutations ------------------------------------------------------
+
+export type MemberPatch = { role?: Role; active?: boolean };
+
+export async function updateMember(
+  id: string,
+  patch: MemberPatch,
+): Promise<Member | null> {
+  return request(() => {
+    const db = getDatabase();
+    const user = db.users.find((u) => u.id === id);
+    if (!user) return null;
+    if (patch.role !== undefined) user.role = patch.role;
+    if (patch.active !== undefined) user.active = patch.active;
+    const team = db.teams.find((t) => t.id === user.teamId) ?? null;
+    return { ...user, team, mfa: mfaFor(user) };
+  });
+}
+
+export async function removeMember(id: string): Promise<{ id: string }> {
+  return request(() => {
+    const arr = getDatabase().users as User[];
+    const idx = arr.findIndex((u) => u.id === id);
+    if (idx >= 0) arr.splice(idx, 1);
+    return { id };
+  });
+}

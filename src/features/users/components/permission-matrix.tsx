@@ -1,12 +1,44 @@
 "use client";
 
-import { listPermissions } from "@/lib/backend";
-import { useAsync } from "@/shared/hooks/use-async";
-import { Badge, Card, Skeleton } from "@/shared/ui";
-import { GRANT_META, PERMISSION_SCOPES, ROLE_TONE } from "../constants";
+import { useEffect, useState } from "react";
+import {
+  listPermissions,
+  type PermissionAction,
+  type PermissionMatrixRow,
+  type PermissionScope,
+  updatePermissionGrant,
+} from "@/lib/backend";
+import { Badge, Card, Select, Skeleton } from "@/shared/ui";
+import { GRANT_OPTIONS, PERMISSION_SCOPES, ROLE_TONE } from "../constants";
 
 export function PermissionMatrix() {
-  const perms = useAsync(() => listPermissions(), []);
+  const [rows, setRows] = useState<PermissionMatrixRow[] | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    listPermissions().then((data) => {
+      if (active) setRows(data.map((r) => ({ ...r, grants: { ...r.grants } })));
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const setGrant = (
+    role: PermissionMatrixRow["role"],
+    scope: PermissionScope,
+    action: PermissionAction,
+  ) => {
+    setRows(
+      (prev) =>
+        prev?.map((r) =>
+          r.role === role
+            ? { ...r, grants: { ...r.grants, [scope]: action } }
+            : r,
+        ) ?? prev,
+    );
+    void updatePermissionGrant(role, scope, action);
+  };
 
   return (
     <Card className="overflow-hidden">
@@ -19,15 +51,15 @@ export function PermissionMatrix() {
         </span>
       </div>
 
-      {perms.loading && !perms.data ? (
+      {!rows ? (
         <div className="space-y-2 p-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-9 w-full" />
+            <Skeleton key={i} className="h-10 w-full" />
           ))}
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-200 border-collapse text-left">
+          <table className="w-full min-w-240 border-collapse text-left">
             <thead className="bg-surface-2 border-border-token border-b">
               <tr className="text-text-3 text-[11px] font-semibold tracking-wide uppercase">
                 <th className="px-4 py-2">Role</th>
@@ -39,12 +71,12 @@ export function PermissionMatrix() {
               </tr>
             </thead>
             <tbody>
-              {perms.data?.map((row) => (
+              {rows.map((row) => (
                 <tr
                   key={row.role}
                   className="border-border-token border-b last:border-0"
                 >
-                  <td className="px-4 py-2.5">
+                  <td className="px-4 py-2.5 align-top">
                     <Badge tone={ROLE_TONE[row.role]} className="capitalize">
                       {row.role}
                     </Badge>
@@ -54,19 +86,18 @@ export function PermissionMatrix() {
                       </div>
                     ) : null}
                   </td>
-                  {PERMISSION_SCOPES.map((s) => {
-                    const grant = row.grants[s.key];
-                    const meta = GRANT_META[grant];
-                    return (
-                      <td key={s.key} className="px-3 py-2.5">
-                        {grant === "none" ? (
-                          <span className="text-text-3">—</span>
-                        ) : (
-                          <Badge tone={meta.tone}>{meta.label}</Badge>
-                        )}
-                      </td>
-                    );
-                  })}
+                  {PERMISSION_SCOPES.map((s) => (
+                    <td key={s.key} className="px-3 py-2.5">
+                      <Select
+                        className="w-28"
+                        value={row.grants[s.key]}
+                        options={[...GRANT_OPTIONS]}
+                        onChange={(v) =>
+                          setGrant(row.role, s.key, v as PermissionAction)
+                        }
+                      />
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>

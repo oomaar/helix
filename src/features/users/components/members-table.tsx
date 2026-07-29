@@ -1,21 +1,34 @@
 "use client";
 
-import { BACKEND_NOW, type Member } from "@/lib/backend";
-import { relativeTime } from "@/lib/utils";
+import type { Member, Role } from "@/lib/backend";
 import type { AsyncState } from "@/shared/hooks/use-async";
 import {
   Avatar,
   Badge,
+  Button,
   Card,
   EmptyState,
+  Select,
   Skeleton,
   StatusDot,
 } from "@/shared/ui";
-import { ROLE_TONE } from "../constants";
+import { ROLE_OPTIONS } from "../constants";
 
-type MembersTableProps = { state: AsyncState<readonly Member[]> };
+type MembersTableProps = {
+  state: AsyncState<readonly Member[]>;
+  busyId: string | null;
+  onChangeRole: (id: string, role: Role) => void;
+  onToggleActive: (member: Member) => void;
+  onRemove: (member: Member) => void;
+};
 
-export function MembersTable({ state }: MembersTableProps) {
+export function MembersTable({
+  state,
+  busyId,
+  onChangeRole,
+  onToggleActive,
+  onRemove,
+}: MembersTableProps) {
   const { data, loading } = state;
 
   if (loading && !data) {
@@ -42,7 +55,7 @@ export function MembersTable({ state }: MembersTableProps) {
   return (
     <Card className="overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-200 border-collapse text-left">
+        <table className="w-full min-w-240 border-collapse text-left">
           <thead className="bg-surface-2 border-border-token border-b">
             <tr className="text-text-3 text-[11px] font-semibold tracking-wide uppercase">
               <th className="px-4 py-2">Member</th>
@@ -50,7 +63,7 @@ export function MembersTable({ state }: MembersTableProps) {
               <th className="px-3 py-2">Team</th>
               <th className="px-3 py-2">MFA</th>
               <th className="px-3 py-2">Status</th>
-              <th className="px-3 py-2 text-right">Joined</th>
+              <th className="px-3 py-2 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -73,9 +86,13 @@ export function MembersTable({ state }: MembersTableProps) {
                   </div>
                 </td>
                 <td className="px-3 py-2.5">
-                  <Badge tone={ROLE_TONE[m.role]} className="capitalize">
-                    {m.role}
-                  </Badge>
+                  <Select
+                    className="w-32"
+                    value={m.role}
+                    options={[...ROLE_OPTIONS]}
+                    disabled={busyId === m.id}
+                    onChange={(v) => onChangeRole(m.id, v as Role)}
+                  />
                 </td>
                 <td className="text-text-2 px-3 py-2.5 text-[12.5px]">
                   {m.team?.name ?? "—"}
@@ -91,8 +108,26 @@ export function MembersTable({ state }: MembersTableProps) {
                     {m.active ? "Active" : "Inactive"}
                   </span>
                 </td>
-                <td className="text-text-3 px-3 py-2.5 text-right font-mono text-[11px]">
-                  {relativeTime(m.createdAt, BACKEND_NOW)}
+                <td className="px-3 py-2.5">
+                  <div className="flex justify-end gap-1.5">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={busyId === m.id}
+                      onClick={() => onToggleActive(m)}
+                    >
+                      {m.active ? "Deactivate" : "Activate"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={busyId === m.id}
+                      onClick={() => onRemove(m)}
+                      className="text-danger hover:bg-danger-soft"
+                    >
+                      Remove
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}

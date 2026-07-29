@@ -28,15 +28,32 @@ export const ROLE_TONE: Record<Role, BadgeTone> = {
   billing: "warn",
 };
 
-export const GRANT_META: Record<
-  PermissionAction,
-  { label: string; tone: BadgeTone }
-> = {
-  override: { label: "Full", tone: "brand" },
-  edit: { label: "Edit", tone: "success" },
-  view: { label: "View", tone: "neutral" },
-  none: { label: "—", tone: "neutral" },
+/** Grant labels aligned to the approved design. */
+export const GRANT_LABEL: Record<PermissionAction, string> = {
+  override: "Override",
+  edit: "Full",
+  view: "View only",
+  none: "No access",
 };
+
+export const GRANT_TONE: Record<PermissionAction, BadgeTone> = {
+  override: "brand",
+  edit: "success",
+  view: "neutral",
+  none: "neutral",
+};
+
+const GRANT_ORDER: readonly PermissionAction[] = [
+  "none",
+  "view",
+  "edit",
+  "override",
+];
+
+export const GRANT_OPTIONS: readonly {
+  value: PermissionAction;
+  label: string;
+}[] = GRANT_ORDER.map((g) => ({ value: g, label: GRANT_LABEL[g] }));
 
 export const PERMISSION_SCOPES: readonly {
   key: PermissionScope;

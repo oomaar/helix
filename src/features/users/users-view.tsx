@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getOrgSummary, listMembers, type Role } from "@/lib/backend";
+import {
+  getOrgSummary,
+  listMembers,
+  type Member,
+  removeMember,
+  type Role,
+  updateMember,
+} from "@/lib/backend";
 import { SearchIcon } from "@/shared/icons";
 import { useAsync } from "@/shared/hooks/use-async";
 import { Button, Input, PageHeader, RadioGroup, Select } from "@/shared/ui";
@@ -17,6 +24,7 @@ export function UsersView() {
   const [search, setSearch] = useState("");
   const [role, setRole] = useState<Role | "all">("all");
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const summary = useAsync(() => getOrgSummary(), []);
@@ -34,6 +42,43 @@ export function UsersView() {
     summary.reload();
     setFeedback(`Invited ${name}`);
   };
+
+  const runMemberAction = async (
+    id: string,
+    action: () => Promise<unknown>,
+    note: string,
+  ) => {
+    setBusyId(id);
+    try {
+      await action();
+      members.reload();
+      summary.reload();
+      setFeedback(note);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const onChangeRole = (id: string, role: Role) =>
+    runMemberAction(
+      id,
+      () => updateMember(id, { role }),
+      `Role updated to ${role}`,
+    );
+
+  const onToggleActive = (member: Member) =>
+    runMemberAction(
+      member.id,
+      () => updateMember(member.id, { active: !member.active }),
+      `${member.active ? "Deactivated" : "Activated"} ${member.name}`,
+    );
+
+  const onRemove = (member: Member) =>
+    runMemberAction(
+      member.id,
+      () => removeMember(member.id),
+      `Removed ${member.name}`,
+    );
 
   return (
     <div className="mx-auto max-w-350 px-4 py-5 md:p-[22px_26px_60px]">
@@ -84,7 +129,13 @@ export function UsersView() {
               onChange={(v) => setRole(v as Role | "all")}
             />
           </div>
-          <MembersTable state={members} />
+          <MembersTable
+            state={members}
+            busyId={busyId}
+            onChangeRole={onChangeRole}
+            onToggleActive={onToggleActive}
+            onRemove={onRemove}
+          />
         </>
       ) : (
         <PermissionMatrix />

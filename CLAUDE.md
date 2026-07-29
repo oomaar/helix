@@ -427,6 +427,35 @@ Shared
 - analytics / anomalies query layers + budgets summary & create/update mutations
 ```
 
+## Phase 6 — Enterprise Administration ✅
+
+Organization management across four connected screens.
+
+```
+Users & Roles (/users)
+- Members table (avatar, role, MFA, status) with search + role filter
+- Invite member dialog (validated → creates a real member)
+- Member row actions: change role, activate/deactivate, remove
+- Editable permission matrix (roles × scopes, inherited grants, live persist)
+
+Feature Flags (/flags)
+- Flag cards with rollout control (off/percentage/targeted/on), percentage
+  slider, environment targeting — optimistic + persisted
+
+Integrations (/integrations)
+- Cloud accounts (derived resource count + spend per provider account)
+- Tooling/data-source catalog with connect / disconnect
+
+Organization settings (/settings — new route + nav entry)
+- Profile, Security & access (SSO / MFA toggles), Defaults, Danger zone
+- Dirty-detect Save / Reset; overview stats from the graph
+
+Backend
+- users (members + MFA, invite, update/remove), permissions (grant update),
+  feature-flags (updateFlag), integrations (cloud accounts + catalog toggle),
+  organization (settings get/update + overview)
+```
+
 ---
 
 # Current Phase
@@ -434,36 +463,15 @@ Shared
 Current Phase:
 
 ```
-Phase 6 - Enterprise Administration
+TBD — planned roadmap (Phases 1–6) complete
 ```
 
 Current Goal:
 
 ```
-Organization management.
-
-```
-
-Modules:
-
-```
-- Users
-- Roles
-- Permissions
-- Feature Flags
-- Integrations
-```
-
-Tasks:
-
-```
-- User management
-- Invite users
-- Role management
-- Permission matrix
-- Feature flags
-- Integrations
-- Organization settings
+Remaining placeholder screen: Audit Log (/audit) — immutable event stream
+(the "Govern" nav item, referenced by the product story). Otherwise pick
+polish/QA or a new area.
 ```
 
 ---
