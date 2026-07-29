@@ -10,6 +10,7 @@ import {
   InvestigationIcon,
   OperationsIcon,
   ResourcesIcon,
+  SettingsIcon,
   UsersIcon,
 } from "@/shared/icons";
 
@@ -98,6 +99,12 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         href: "/integrations",
         icon: IntegrationsIcon,
       },
+      {
+        id: "settings",
+        label: "Organization",
+        href: "/settings",
+        icon: SettingsIcon,
+      },
     ],
   },
 ];
@@ -115,6 +122,7 @@ export const CRUMB_MAP: Record<string, readonly [string, string]> = {
   "/users": ["Administration", "Users & roles"],
   "/flags": ["Administration", "Feature flags"],
   "/integrations": ["Administration", "Integrations"],
+  "/settings": ["Administration", "Organization"],
 };
 
 export function resolveCrumb(pathname: string): readonly [string, string] {
