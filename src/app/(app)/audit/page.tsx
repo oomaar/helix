@@ -1,10 +1,10 @@
-import { ScreenPlaceholder } from "@/shared/ui/screen-placeholder";
+import type { Metadata } from "next";
+import { AuditView } from "@/features/audit";
+
+export const metadata: Metadata = {
+  title: "Audit Log · Helix",
+};
 
 export default function AuditPage() {
-  return (
-    <ScreenPlaceholder
-      title="Audit log"
-      description="Chronological record of every action across the platform."
-    />
-  );
+  return <AuditView />;
 }

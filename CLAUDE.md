@@ -456,6 +456,24 @@ Backend
   organization (settings get/update + overview)
 ```
 
+## Phase 7 — Audit & Governance ✅
+
+The immutable event stream — the last screen; every route is now a real feature.
+
+```
+Audit Log (/audit)
+- List view (paginated): Timestamp, Actor, Action · resource, Source IP,
+  Result, Event ID · Timeline view (grouped by day)
+- Filters (action / actor / result) + full-text search
+- Event-detail drawer: metadata (actor, category, result, IP, resource) +
+  before → after JSON diff (JsonDiff component)
+- Export evidence (theme-preserving PDF print)
+
+Backend
+- audit query layer: events enriched with category / result / resource label,
+  facets, summary (retained 400 days · SOC 2), before→after detail per action
+```
+
 ---
 
 # Current Phase
@@ -463,15 +481,16 @@ Backend
 Current Phase:
 
 ```
-TBD — planned roadmap (Phases 1–6) complete
+Roadmap complete (Phases 1–7) — polish & QA
 ```
 
 Current Goal:
 
 ```
-Remaining placeholder screen: Audit Log (/audit) — immutable event stream
-(the "Govern" nav item, referenced by the product story). Otherwise pick
-polish/QA or a new area.
+All planned screens are built. Optional next steps:
+- Browser interaction QA across flows (charts, drawers, wizards, dropdowns)
+- Bump seed volume for fuller grids/pagination
+- Persist grid view-state (sort/filter/columns) to the URL
 ```
 
 ---
