@@ -401,6 +401,61 @@ Investigations list (/investigations) — search / status / severity → war-roo
 Wired the resource-detail anomaly callout to the real incident war-room
 ```
 
+## Phase 5 — Analytics ✅
+
+Enterprise cost reporting across three connected screens, plus a new grouped-bar
+chart primitive.
+
+```
+Cost Analytics (/analytics)
+- Group-by attribution (team / provider / env / type): this month vs last
+  (grouped bars), blended 12-month trend (area), spend by resource type
+  (donut), resource distribution by cost band (bars)
+- Optimization recommendations (ranked: terminate / rightsize / schedule /
+  commit, $/mo savings + apply) · Export report (theme-preserving PDF print)
+
+Cost Anomalies (/anomalies)
+- At-risk summary + filterable table (id, resource, severity, delta, baseline,
+  current, status) · Detection-rules dialog
+
+Budgets (/budgets)
+- Summary + period filter · budget cards (spent-of-limit with alert-threshold
+  ticks, status) · New / Edit budget dialog (spend derived from team spend)
+
+Shared
+- New GroupedBarChart primitive (side-by-side/comparison bars)
+- analytics / anomalies query layers + budgets summary & create/update mutations
+```
+
+## Phase 6 — Enterprise Administration ✅
+
+Organization management across four connected screens.
+
+```
+Users & Roles (/users)
+- Members table (avatar, role, MFA, status) with search + role filter
+- Invite member dialog (validated → creates a real member)
+- Member row actions: change role, activate/deactivate, remove
+- Editable permission matrix (roles × scopes, inherited grants, live persist)
+
+Feature Flags (/flags)
+- Flag cards with rollout control (off/percentage/targeted/on), percentage
+  slider, environment targeting — optimistic + persisted
+
+Integrations (/integrations)
+- Cloud accounts (derived resource count + spend per provider account)
+- Tooling/data-source catalog with connect / disconnect
+
+Organization settings (/settings — new route + nav entry)
+- Profile, Security & access (SSO / MFA toggles), Defaults, Danger zone
+- Dirty-detect Save / Reset; overview stats from the graph
+
+Backend
+- users (members + MFA, invite, update/remove), permissions (grant update),
+  feature-flags (updateFlag), integrations (cloud accounts + catalog toggle),
+  organization (settings get/update + overview)
+```
+
 ---
 
 # Current Phase
@@ -408,36 +463,15 @@ Wired the resource-detail anomaly callout to the real incident war-room
 Current Phase:
 
 ```
-Phase 5 — Analytics
+TBD — planned roadmap (Phases 1–6) complete
 ```
 
 Current Goal:
 
 ```
-Show enterprise reporting — spend attribution, trends, forecasts and
-optimization across teams and providers.
-```
-
-Current Checklist:
-
-```
-Cost Analytics (/analytics)
-- Charts: line, area, bar, grouped/comparison bar, donut, heatmap
-  (reuse + extend the shared zero-dep SVG chart primitives)
-- Spend attribution with a Group-by dimension (team / provider / service / env)
-- Blended monthly spend trend, trailing 12 months (line / area)
-- Spend by team — this month vs last (comparison bars)
-- Spend by resource type + resource distribution by cost band
-- Trend analysis, cost analysis, forecasts
-- Optimization recommendations (ranked, $/mo savings + apply action)
-- Export report (reuse the theme-preserving PDF print)
-- Per-panel loading / empty / error + responsive
-
-Related cost screens (this phase or a 5.x)
-- Cost Anomalies (/anomalies): ML-detected deviations table
-  (id, resource, severity, delta, baseline, current, status) + detection rules
-- Budgets (/budgets): team allocations, spent-of-limit, over-budget alerts,
-  new / edit budget
+Remaining placeholder screen: Audit Log (/audit) — immutable event stream
+(the "Govern" nav item, referenced by the product story). Otherwise pick
+polish/QA or a new area.
 ```
 
 ---

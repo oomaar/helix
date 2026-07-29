@@ -79,6 +79,10 @@ export const PlusIcon = icon(["M12 5v14", "M5 12h14"]);
 export const MenuIcon = icon(["M3 6h18M3 12h18M3 18h18"]);
 export const CloseIcon = icon(["M6 6l12 12M18 6L6 18"]);
 export const CheckIcon = icon(["M20 6L9 17l-5-5"]);
+export const SettingsIcon = icon([
+  "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z",
+  "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+]);
 export const ChevronDownIcon = icon(["M6 9l6 6 6-6"]);
 export const ChevronLeftIcon = icon(["M15 6l-6 6 6 6"]);
 export const ChevronRightIcon = icon(["M9 6l6 6-6 6"]);

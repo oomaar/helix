@@ -1,10 +1,10 @@
-import { ScreenPlaceholder } from "@/shared/ui/screen-placeholder";
+import type { Metadata } from "next";
+import { IntegrationsView } from "@/features/integrations";
+
+export const metadata: Metadata = {
+  title: "Integrations · Helix",
+};
 
 export default function IntegrationsPage() {
-  return (
-    <ScreenPlaceholder
-      title="Integrations"
-      description="Connections to identity providers, ticketing and paging."
-    />
-  );
+  return <IntegrationsView />;
 }
