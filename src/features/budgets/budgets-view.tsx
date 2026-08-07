@@ -100,7 +100,19 @@ export function BudgetsView() {
         ))}
       </div>
 
-      {budgets.loading && !budgets.data ? (
+      {budgets.error ? (
+        <Card>
+          <EmptyState
+            title="Couldn’t load budgets"
+            description={budgets.error.message}
+            action={
+              <Button size="sm" onClick={budgets.reload}>
+                Retry
+              </Button>
+            }
+          />
+        </Card>
+      ) : budgets.loading && !budgets.data ? (
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="rounded-panel h-36" />

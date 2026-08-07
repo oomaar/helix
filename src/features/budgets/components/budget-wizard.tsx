@@ -3,7 +3,12 @@
 import { useMemo, useState } from "react";
 import { type BudgetWithTeam, createBudget, updateBudget } from "@/lib/backend";
 import { money } from "@/lib/utils";
-import { useWizard, Wizard, WizardConfirmation } from "@/shared/forms";
+import {
+  useSubmitAction,
+  useWizard,
+  Wizard,
+  WizardConfirmation,
+} from "@/shared/forms";
 import { Badge, Button } from "@/shared/ui";
 import { budgetDraft, budgetSteps } from "../helpers";
 import type { BudgetDraft } from "../types";
@@ -26,15 +31,14 @@ export function BudgetWizard({ budget, onClose, onSaved }: BudgetWizardProps) {
     steps,
     initial: () => budgetDraft(budget),
   });
-  const [submitting, setSubmitting] = useState(false);
+  const action = useSubmitAction();
   const [saved, setSaved] = useState<BudgetWithTeam | null>(null);
 
   const { draft, set, errors, step } = wizard;
 
   const submit = () => {
-    wizard.submit(async () => {
-      setSubmitting(true);
-      try {
+    wizard.submit(() =>
+      action.run(async () => {
         const input = {
           name: draft.name,
           teamId: draft.teamId,
@@ -47,11 +51,14 @@ export function BudgetWizard({ budget, onClose, onSaved }: BudgetWizardProps) {
         const result = budget
           ? await updateBudget(budget.id, input)
           : await createBudget(input);
-        if (result) setSaved(result);
-      } finally {
-        setSubmitting(false);
-      }
-    });
+        if (!result) {
+          throw new Error(
+            "This budget no longer exists — it may have been deleted in another session.",
+          );
+        }
+        setSaved(result);
+      }),
+    );
   };
 
   return (
@@ -66,7 +73,9 @@ export function BudgetWizard({ budget, onClose, onSaved }: BudgetWizardProps) {
       labelledBy="budget-wizard-title"
       onClose={onClose}
       onSubmit={submit}
-      submitting={submitting}
+      submitting={action.submitting}
+      error={action.error}
+      onDismissError={action.clearError}
       submitLabel={editing ? "Save budget" : "Create budget"}
       footerNote={
         <span className="flex items-center gap-1.5">
