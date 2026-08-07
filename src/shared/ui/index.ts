@@ -24,3 +24,4 @@ export { Checkbox } from "./checkbox";
 export { Pagination } from "./pagination";
 export { Drawer } from "./drawer";
 export { Textarea } from "./textarea";
+export { Toast, useToast } from "./toast";

@@ -1,0 +1,60 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
+
+type ToastProps = {
+  /** Message to show; `null` renders nothing. */
+  message: string | null;
+  className?: string;
+};
+
+/**
+ * Transient bottom-centered confirmation. Purely presentational — the owner
+ * controls visibility (see `useToast` for the usual timeout behaviour).
+ */
+export function Toast({ message, className }: ToastProps) {
+  if (!message) return null;
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="pointer-events-none fixed inset-x-0 bottom-5 z-100 flex justify-center px-4"
+      data-print-hide
+    >
+      <div
+        className={cn(
+          "bg-raised border-border-strong text-text rounded-lg border px-4 py-2 text-[12.5px] shadow-(--shadow-elev-2)",
+          "animate-[hx-fade_.18s_ease]",
+          className,
+        )}
+      >
+        {message}
+      </div>
+    </div>
+  );
+}
+
+type ToastState = { text: string | null; nonce: number };
+
+/**
+ * Message + auto-dismiss timer for `Toast`. The nonce restarts the timer even
+ * when the same message is shown twice in a row.
+ */
+export function useToast(timeoutMs = 3000): {
+  message: string | null;
+  show: (message: string) => void;
+} {
+  const [state, setState] = useState<ToastState>({ text: null, nonce: 0 });
+
+  useEffect(() => {
+    if (!state.text) return;
+    const t = setTimeout(() => setState({ text: null, nonce: 0 }), timeoutMs);
+    return () => clearTimeout(t);
+  }, [state, timeoutMs]);
+
+  return {
+    message: state.text,
+    show: (text: string) => setState((s) => ({ text, nonce: s.nonce + 1 })),
+  };
+}
