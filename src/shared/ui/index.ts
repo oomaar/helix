@@ -4,6 +4,7 @@ export { Button, type ButtonSize, type ButtonVariant } from "./button";
 export { Callout, type CalloutTone } from "./callout";
 export { Card, CardBody, CardHeader, CardSubtitle, CardTitle } from "./card";
 export { Chip } from "./chip";
+export { ChipGroup } from "./chip-group";
 export { Dialog } from "./dialog";
 export { Divider } from "./divider";
 export { EmptyState } from "./empty-state";
