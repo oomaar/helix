@@ -7,7 +7,12 @@ import {
   type PolicyWithRelations,
   updatePolicy,
 } from "@/lib/backend";
-import { useWizard, Wizard, WizardConfirmation } from "@/shared/forms";
+import {
+  useSubmitAction,
+  useWizard,
+  Wizard,
+  WizardConfirmation,
+} from "@/shared/forms";
 import { Badge, Button } from "@/shared/ui";
 import { policyDraft, POLICY_STEPS, toPolicyInput } from "../helpers";
 import { ENFORCEMENT_META } from "../constants";
@@ -35,24 +40,26 @@ export function PolicyBuilder({
     steps: POLICY_STEPS,
     initial: () => policyDraft(policy),
   });
-  const [submitting, setSubmitting] = useState(false);
+  const action = useSubmitAction();
   const [saved, setSaved] = useState<PolicySaveResult | null>(null);
 
   const { draft, set, errors, step } = wizard;
 
   const submit = () => {
-    wizard.submit(async () => {
-      setSubmitting(true);
-      try {
+    wizard.submit(() =>
+      action.run(async () => {
         const input = toPolicyInput(draft);
         const result = policy
           ? await updatePolicy(policy.id, input)
           : await createPolicy(input);
-        if (result) setSaved(result);
-      } finally {
-        setSubmitting(false);
-      }
-    });
+        if (!result) {
+          throw new Error(
+            "This policy no longer exists — it may have been deleted in another session.",
+          );
+        }
+        setSaved(result);
+      }),
+    );
   };
 
   return (
@@ -67,7 +74,9 @@ export function PolicyBuilder({
       labelledBy="policy-builder-title"
       onClose={onClose}
       onSubmit={submit}
-      submitting={submitting}
+      submitting={action.submitting}
+      error={action.error}
+      onDismissError={action.clearError}
       submitLabel={editing ? "Save policy" : "Create policy"}
       footerNote={
         <span className="flex items-center gap-1.5">
