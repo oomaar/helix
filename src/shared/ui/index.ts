@@ -1,6 +1,7 @@
 export { Avatar } from "./avatar";
 export { Badge, type BadgeTone } from "./badge";
 export { Button, type ButtonSize, type ButtonVariant } from "./button";
+export { Callout, type CalloutTone } from "./callout";
 export { Card, CardBody, CardHeader, CardSubtitle, CardTitle } from "./card";
 export { Chip } from "./chip";
 export { Dialog } from "./dialog";
