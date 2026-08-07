@@ -18,6 +18,7 @@ import {
 } from "@/lib/backend";
 import { moneyCompact } from "@/lib/utils";
 import { useProvisioning } from "@/features/provisioning";
+import { EditConfigurationWizard } from "@/features/resource-detail";
 import {
   RESOURCE_CREATED_EVENT,
   type ResourceCreatedDetail,
@@ -30,6 +31,8 @@ import {
   PageHeader,
   Pagination,
   Skeleton,
+  Toast,
+  useToast,
 } from "@/shared/ui";
 import {
   BULK_ACTIONS,
@@ -85,8 +88,10 @@ export function ResourcesView() {
     new Set(DEFAULT_VISIBLE_COLUMNS),
   );
   const [drawer, setDrawer] = useState<ResourceWithRelations | null>(null);
+  const [configResource, setConfigResource] =
+    useState<ResourceWithRelations | null>(null);
   const [savedViews, setSavedViews] = useState<SavedView[]>([]);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const toast = useToast();
   const [pendingAction, setPendingAction] = useState<BulkAction | null>(null);
 
   const facets = useAsync(() => resourceFacets(), []);
@@ -119,12 +124,6 @@ export function ResourcesView() {
     return { kind: "grouped", groups };
   }, [groupBy, search, appliedFilter, sort.key, sort.direction, page]);
 
-  useEffect(() => {
-    if (!feedback) return;
-    const t = setTimeout(() => setFeedback(null), 3000);
-    return () => clearTimeout(t);
-  }, [feedback]);
-
   // Refresh + surface the new resource when the provisioning wizard creates one.
   useEffect(() => {
     const onCreated = (e: Event) => {
@@ -134,7 +133,7 @@ export function ResourcesView() {
       grid.reload();
       summary.reload();
       facets.reload();
-      if (detail?.name) setFeedback(`Provisioned ${detail.name}`);
+      if (detail?.name) toast.show(`Provisioned ${detail.name}`);
     };
     window.addEventListener(RESOURCE_CREATED_EVENT, onCreated);
     return () => window.removeEventListener(RESOURCE_CREATED_EVENT, onCreated);
@@ -221,7 +220,7 @@ export function ResourcesView() {
     facets.reload();
     const label =
       BULK_ACTIONS.find((a) => a.action === action)?.label ?? action;
-    setFeedback(`${label} · ${res.count} resource(s)`);
+    toast.show(`${label} · ${res.count} resource(s)`);
   };
 
   const onBulkAction = (action: BulkAction) => {
@@ -229,7 +228,7 @@ export function ResourcesView() {
     if (action === "export-csv") {
       const rows = loaded.filter((r) => selected.has(r.id));
       downloadCsv("helix-resources.csv", toCsv(rows));
-      setFeedback(`Exported ${rows.length} resource(s) to CSV`);
+      toast.show(`Exported ${rows.length} resource(s) to CSV`);
       return;
     }
     // Parameterless actions run immediately; the rest collect input / confirm.
@@ -246,11 +245,11 @@ export function ResourcesView() {
     if (action === "Restart") {
       await applyBulkAction("restart", [resource.id]);
       grid.reload();
-      setFeedback(`Restarted ${resource.name}`);
+      toast.show(`Restarted ${resource.name}`);
     } else if (action === "Edit config") {
-      setDrawer(resource);
+      setConfigResource(resource);
     } else {
-      setFeedback(`Optimization suggested for ${resource.name}`);
+      toast.show(`Optimization suggested for ${resource.name}`);
     }
   };
 
@@ -333,7 +332,7 @@ export function ResourcesView() {
                 filter: appliedFilter,
               },
             ]);
-            setFeedback(`Saved “${name}”`);
+            toast.show(`Saved “${name}”`);
           }}
         />
 
@@ -399,6 +398,23 @@ export function ResourcesView() {
 
       <ResourceDrawer resource={drawer} onClose={() => setDrawer(null)} />
 
+      {configResource ? (
+        <EditConfigurationWizard
+          resourceId={configResource.id}
+          onClose={() => setConfigResource(null)}
+          onApplied={(result) => {
+            setConfigResource(null);
+            grid.reload();
+            summary.reload();
+            toast.show(
+              result.scheduledFor
+                ? `Scheduled ${result.changes.length} change${result.changes.length === 1 ? "" : "s"} for ${result.scheduledFor}`
+                : `Applied ${result.changes.length} change${result.changes.length === 1 ? "" : "s"} to ${configResource.name}`,
+            );
+          }}
+        />
+      ) : null}
+
       {pendingAction ? (
         <BulkActionDialog
           action={pendingAction}
@@ -411,13 +427,7 @@ export function ResourcesView() {
         />
       ) : null}
 
-      {feedback ? (
-        <div className="fixed inset-x-0 bottom-5 z-50 flex justify-center px-4">
-          <div className="bg-raised border-border-strong text-text rounded-lg border px-4 py-2 text-[12.5px] shadow-(--shadow-elev-2)">
-            {feedback}
-          </div>
-        </div>
-      ) : null}
+      <Toast message={toast.message} />
     </div>
   );
 }

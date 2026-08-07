@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useFieldGroup } from "./field";
 
 export type RadioOption = { value: string; label: string };
 
@@ -20,10 +21,14 @@ export function RadioGroup({
   ariaLabel,
   className,
 }: RadioGroupProps) {
+  const group = useFieldGroup();
   return (
     <div
       role="radiogroup"
+      {...group}
+      // An explicit label wins over the enclosing Field's.
       aria-label={ariaLabel}
+      aria-labelledby={ariaLabel ? undefined : group["aria-labelledby"]}
       className={cn(
         "bg-surface-2 border-border-token inline-flex rounded-[8px] border p-0.5",
         className,

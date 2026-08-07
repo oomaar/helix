@@ -474,6 +474,56 @@ Backend
   facets, summary (retained 400 days · SOC 2), before→after detail per action
 ```
 
+## Phase 8 — Enterprise Forms ✅
+
+The five flagship forms, all driven by one shared wizard engine.
+
+```
+Shared form engine (shared/forms)
+- useWizard: draft state, conditional steps, forward navigation gated on
+  per-step validators, live validation once a step is attempted, jump-back to
+  visited steps, whole-form validation on submit, dirty tracking
+- Wizard shell: progress rail (vertical rail → compact row), scrolling step
+  body, action bar, submit-error callout, unsaved-changes guard, step focus
+  management + live-region announcements
+- useSubmitAction (submit lifecycle + error capture), RepeatableList,
+  ReviewGrid, FormSection / FormRow, WizardConfirmation
+
+Forms
+- Provision Wizard — Basics → Configuration → Access & tags → Review
+- Budget Wizard — Scope → Limit → Thresholds → Review; run-rate forecast,
+  repeatable thresholds with a per-threshold action, rollover only for
+  multi-period budgets
+- Policy Builder — Definition → Scope → Rules → Enforcement → [Exceptions] →
+  Review; nested repeatable rules × conditions, field-driven operators and
+  value controls, live impact preview, conditional Exceptions step
+- Alert Rule Builder — Signal → Conditions → Routing → Delivery → Review;
+  metric-driven conditional fields, cross-step validation (SEV1 must page),
+  live noise estimate
+- Edit Configuration — Settings → Tags → Review changes; capability-driven
+  sections per resource kind, field-level diff, apply-now vs maintenance
+  window, written reason required for disruptive changes
+
+Screens
+- Policies (/policies) and Alert rules (/alerts): filters, summary stats,
+  loading / empty / error states, nav + breadcrumbs
+- Command palette "Create …" actions navigate and open the builder directly
+- Resources grid row action "Edit config" opens the configuration form
+
+Backend
+- Policy + AlertRule models, seed data, and query layers evaluated against the
+  real resource graph (violations, breaches, weekly notification estimate)
+- Budget thresholds / rollover / notes + team run-rate forecast
+- resource-config: single source of truth for a resource's settings (the
+  detail panel reads through it), shared field-level diff, cost projection,
+  persisted scheduled changes with cancel
+
+Shared UI
+- Textarea, Callout, ChipGroup, Toast + useToast (replaced 9 inline copies)
+- Field wires id / aria-invalid / aria-describedby to its control; RadioGroup
+  and ChipGroup get aria-labelledby
+```
+
 ---
 
 # Current Phase
@@ -481,13 +531,17 @@ Backend
 Current Phase:
 
 ```
-Roadmap complete (Phases 1–7) — polish & QA
+Roadmap complete (Phases 1–8) — polish & QA
 ```
 
 Current Goal:
 
 ```
-All planned screens are built. Optional next steps:
+All planned screens and the five flagship forms are built. Optional next steps:
+- "Optimize" is still a stub (resource detail header + grid row action) —
+  becoming real needs a rightsizing recommendation flow
+- Reconcile the four new forms (Budget, Policy, Alert Rule, Edit Config) back
+  into the design file; they currently set their own precedent
 - Browser interaction QA across flows (charts, drawers, wizards, dropdowns)
 - Bump seed volume for fuller grids/pagination
 - Persist grid view-state (sort/filter/columns) to the URL

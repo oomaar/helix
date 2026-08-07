@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   applyBulkAction,
   getOperationsSummary,
@@ -9,7 +9,7 @@ import {
   listPendingApprovals,
 } from "@/lib/backend";
 import { useAsync } from "@/shared/hooks/use-async";
-import { Badge, PageHeader } from "@/shared/ui";
+import { Badge, PageHeader, Toast, useToast } from "@/shared/ui";
 import { ActiveIncidentsPanel } from "./components/active-incidents-panel";
 import { ApprovalsPanel } from "./components/approvals-panel";
 import { OpsStats } from "./components/ops-stats";
@@ -22,13 +22,7 @@ export function OperationsView() {
   const tasks = useAsync(() => listOperationalTasks(), []);
 
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!feedback) return;
-    const t = setTimeout(() => setFeedback(null), 3000);
-    return () => clearTimeout(t);
-  }, [feedback]);
+  const toast = useToast();
 
   const decide = async (
     id: string,
@@ -42,7 +36,7 @@ export function OperationsView() {
       approvals.reload();
       summary.reload();
       tasks.reload();
-      setFeedback(`${label} ${name}`);
+      toast.show(`${label} ${name}`);
     } finally {
       setBusyId(null);
     }
@@ -83,13 +77,7 @@ export function OperationsView() {
         </div>
       </div>
 
-      {feedback ? (
-        <div className="fixed inset-x-0 bottom-5 z-50 flex justify-center px-4">
-          <div className="bg-raised border-border-strong text-text rounded-lg border px-4 py-2 text-[12.5px] shadow-(--shadow-elev-2)">
-            {feedback}
-          </div>
-        </div>
-      ) : null}
+      <Toast message={toast.message} />
     </div>
   );
 }

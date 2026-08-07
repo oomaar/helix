@@ -3,7 +3,11 @@
 import type { BudgetWithTeam } from "@/lib/backend";
 import { cn, money, percent } from "@/lib/utils";
 import { Badge, Button, Card } from "@/shared/ui";
-import { budgetStatus, STATUS_META } from "../constants";
+import {
+  budgetStatus,
+  STATUS_META,
+  THRESHOLD_ACTION_LABELS,
+} from "../constants";
 
 type BudgetCardProps = {
   budget: BudgetWithTeam;
@@ -46,11 +50,12 @@ export function BudgetCard({ budget, onEdit }: BudgetCardProps) {
           className={cn("h-full rounded-full", meta.bar)}
           style={{ width: `${Math.min(100, pct)}%` }}
         />
-        {budget.alertsAt.map((a) => (
+        {budget.thresholds.map((t) => (
           <span
-            key={a}
+            key={t.id}
+            title={`${t.percent}% · ${THRESHOLD_ACTION_LABELS[t.action]}`}
             className="bg-surface/70 absolute top-0 h-full w-px"
-            style={{ left: `${a}%` }}
+            style={{ left: `${t.percent}%` }}
           />
         ))}
       </div>

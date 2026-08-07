@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   getInvestigation,
   type RemediationStep,
   resolveIncident,
 } from "@/lib/backend";
 import { useAsync } from "@/shared/hooks/use-async";
-import { Button, EmptyState, Skeleton } from "@/shared/ui";
+import { Button, EmptyState, Skeleton, Toast, useToast } from "@/shared/ui";
 import { BlastRadius } from "./components/blast-radius";
 import { ConfigDiffPanel } from "./components/config-diff";
 import { InvestigationHeader } from "./components/investigation-header";
@@ -22,20 +22,14 @@ export function InvestigationView({ id }: { id: string }) {
   const inv = useAsync(() => getInvestigation(id), [id]);
   const [busy, setBusy] = useState(false);
   const [actions, setActions] = useState<RemediationStep[]>([]);
-  const [feedback, setFeedback] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!feedback) return;
-    const t = setTimeout(() => setFeedback(null), 3000);
-    return () => clearTimeout(t);
-  }, [feedback]);
+  const toast = useToast();
 
   const onResolve = async () => {
     setBusy(true);
     try {
       await resolveIncident(id);
       inv.reload();
-      setFeedback("Incident declared resolved");
+      toast.show("Incident declared resolved");
     } finally {
       setBusy(false);
     }
@@ -45,14 +39,14 @@ export function InvestigationView({ id }: { id: string }) {
     setActions((prev) =>
       prev.some((a) => a.id === step.id) ? prev : [...prev, step],
     );
-    setFeedback(`Executing: ${step.title}`);
+    toast.show(`Executing: ${step.title}`);
   };
 
   const onUndo = () => {
     const last = actions[actions.length - 1];
     if (!last) return;
     setActions((prev) => prev.slice(0, -1));
-    setFeedback(`Reverted: ${last.title}`);
+    toast.show(`Reverted: ${last.title}`);
   };
 
   const wrap = "mx-auto max-w-350 px-4 py-5 md:p-[22px_26px_60px]";
@@ -111,7 +105,7 @@ export function InvestigationView({ id }: { id: string }) {
         investigation={d}
         busy={busy}
         onResolve={onResolve}
-        onNote={setFeedback}
+        onNote={toast.show}
       />
 
       <div className="mt-5 space-y-3.5">
@@ -139,13 +133,7 @@ export function InvestigationView({ id }: { id: string }) {
         </div>
       </div>
 
-      {feedback ? (
-        <div className="fixed inset-x-0 bottom-5 z-50 flex justify-center px-4">
-          <div className="bg-raised border-border-strong text-text rounded-lg border px-4 py-2 text-[12.5px] shadow-(--shadow-elev-2)">
-            {feedback}
-          </div>
-        </div>
-      ) : null}
+      <Toast message={toast.message} />
     </div>
   );
 }

@@ -13,6 +13,7 @@
 import { idFactory } from "@/lib/utils";
 import type {
   Activity,
+  AlertRule,
   Attachment,
   AuditLog,
   Budget,
@@ -21,6 +22,7 @@ import type {
   FeatureFlag,
   Incident,
   PermissionMatrixRow,
+  Policy,
   Provider,
   ProviderAccount,
   Region,
@@ -172,6 +174,8 @@ export function createDatabase(): Database {
   const nextFlagId = idFactory("flg");
   const nextAttachId = idFactory("att");
   const nextActivityId = idFactory("act");
+  const nextPolicyId = idFactory("pol");
+  const nextAlertId = idFactory("alr");
 
   // --- teams ---
   const teams: Team[] = TEAM_SEEDS.map((t) => ({
@@ -252,6 +256,9 @@ export function createDatabase(): Database {
       const mem = Math.round((0.15 + r() * 0.8) * 100);
       const instances = 1 + Math.floor(r() * 8);
       const baseCost = kind === "compute" || kind === "cluster" ? 900 : 300;
+      // A slice of the estate is left untagged on purpose, so the cost-center
+      // compliance policy has real violations to report.
+      const taggedForChargeback = i % 7 !== 3;
       return {
         id: nextResourceId(),
         name: `${team.slug}-${kind}-${String(i + 1).padStart(2, "0")}`,
@@ -270,7 +277,9 @@ export function createDatabase(): Database {
         tags: [
           { key: "env", value: env },
           { key: "team", value: team.slug },
-          { key: "cost-center", value: team.costCenter },
+          ...(taggedForChargeback
+            ? [{ key: "cost-center", value: team.costCenter }]
+            : []),
         ],
         createdAt: isoDaysAgo(200 - i * 3),
         updatedAt: isoDaysAgo(Math.floor(r() * 30)),
@@ -282,6 +291,7 @@ export function createDatabase(): Database {
   const budgets: Budget[] = teams.slice(0, 6).flatMap((team, i) => {
     const amount = 20000 + i * 15000;
     const spent = Math.round(amount * (0.4 + r() * 0.85));
+    const owner = users.find((u) => u.id === team.ownerId)!;
     return [
       {
         id: nextBudgetId(),
@@ -291,7 +301,28 @@ export function createDatabase(): Database {
         spent,
         teamId: team.id,
         ownerId: team.ownerId,
-        alertsAt: [50, 75, 90],
+        thresholds: [
+          {
+            id: `${team.slug}-m-50`,
+            percent: 50,
+            action: "notify" as const,
+            recipients: owner.email,
+          },
+          {
+            id: `${team.slug}-m-75`,
+            percent: 75,
+            action: "notify" as const,
+            recipients: `#${team.slug}-finops`,
+          },
+          {
+            id: `${team.slug}-m-90`,
+            percent: 90,
+            action: "notify_and_flag" as const,
+            recipients: `#${team.slug}-finops, finops@helix.io`,
+          },
+        ],
+        rollover: false,
+        notes: "",
         createdAt: isoDaysAgo(180 - i * 20),
       },
       {
@@ -302,7 +333,22 @@ export function createDatabase(): Database {
         spent: Math.round(amount * 3 * (0.3 + r() * 0.6)),
         teamId: team.id,
         ownerId: team.ownerId,
-        alertsAt: [75, 90],
+        thresholds: [
+          {
+            id: `${team.slug}-q-75`,
+            percent: 75,
+            action: "notify" as const,
+            recipients: `#${team.slug}-finops`,
+          },
+          {
+            id: `${team.slug}-q-90`,
+            percent: 90,
+            action: "block_provisioning" as const,
+            recipients: "finops@helix.io",
+          },
+        ],
+        rollover: true,
+        notes: `Rolls unspent allocation into the next quarter · ${team.costCenter}`,
         createdAt: isoDaysAgo(160 - i * 20),
       },
     ];
@@ -491,6 +537,323 @@ export function createDatabase(): Database {
     })),
   ];
 
+  // --- governance policies ---
+  const teamBySlug = (slug: string): Team =>
+    teams.find((t) => t.slug === slug) ?? teams[0]!;
+
+  const policies: Policy[] = [
+    {
+      id: nextPolicyId(),
+      key: "cost.large-spend-approval",
+      name: "High-cost resources need FinOps approval",
+      description:
+        "Any production resource forecast above $12K/month must be reviewed by FinOps before it is provisioned.",
+      category: "cost",
+      enforcement: "block",
+      scope: { kind: "environment", values: ["production"] },
+      rules: [
+        {
+          id: "rl-cost-1",
+          name: "Forecast above threshold",
+          match: "all",
+          conditions: [
+            {
+              id: "cd-cost-1",
+              field: "monthly_cost",
+              operator: "gt",
+              value: "12000",
+            },
+            {
+              id: "cd-cost-2",
+              field: "environment",
+              operator: "eq",
+              value: "production",
+            },
+          ],
+        },
+      ],
+      exceptions: [
+        {
+          id: "ex-cost-1",
+          teamId: teamBySlug("data-platform").id,
+          reason: "Training clusters pre-approved for the Q3 model refresh.",
+          expiresInDays: 45,
+        },
+      ],
+      notifyOwners: true,
+      enabled: true,
+      ownerId: users[0]!.id,
+      createdAt: isoDaysAgo(140),
+      updatedAt: isoDaysAgo(6),
+    },
+    {
+      id: nextPolicyId(),
+      key: "security.encryption-required",
+      name: "Encryption at rest required",
+      description:
+        "Databases, caches and storage must declare a managed KMS key. Untagged or unencrypted stores are blocked.",
+      category: "security",
+      enforcement: "block",
+      scope: { kind: "organization", values: [] },
+      rules: [
+        {
+          id: "rl-sec-1",
+          name: "Stateful resources",
+          match: "any",
+          conditions: [
+            {
+              id: "cd-sec-1",
+              field: "kind",
+              operator: "in",
+              value: "database, storage, cache",
+            },
+          ],
+        },
+      ],
+      exceptions: [],
+      notifyOwners: true,
+      enabled: true,
+      ownerId: users[4]!.id,
+      createdAt: isoDaysAgo(220),
+      updatedAt: isoDaysAgo(18),
+    },
+    {
+      id: nextPolicyId(),
+      key: "compliance.cost-center-tag",
+      name: "Cost-center tag on every resource",
+      description:
+        "Resources must carry a cost-center tag so spend can be allocated to a finance owner.",
+      category: "compliance",
+      enforcement: "warn",
+      scope: { kind: "organization", values: [] },
+      rules: [
+        {
+          id: "rl-tag-1",
+          name: "Missing allocation tag",
+          match: "all",
+          conditions: [
+            {
+              id: "cd-tag-1",
+              field: "tag_present",
+              operator: "missing",
+              value: "cost-center",
+            },
+          ],
+        },
+      ],
+      exceptions: [],
+      notifyOwners: false,
+      enabled: true,
+      ownerId: users[6]!.id,
+      createdAt: isoDaysAgo(95),
+      updatedAt: isoDaysAgo(30),
+    },
+    {
+      id: nextPolicyId(),
+      key: "reliability.idle-capacity",
+      name: "Flag idle over-provisioned capacity",
+      description:
+        "Compute running under 20% CPU with more than four instances is reported to the owning team for rightsizing.",
+      category: "reliability",
+      enforcement: "audit",
+      scope: {
+        kind: "team",
+        values: [teamBySlug("platform-ops").id, teamBySlug("growth").id],
+      },
+      rules: [
+        {
+          id: "rl-idle-1",
+          name: "Idle fleet",
+          match: "all",
+          conditions: [
+            { id: "cd-idle-1", field: "cpu", operator: "lt", value: "20" },
+            {
+              id: "cd-idle-2",
+              field: "instances",
+              operator: "gt",
+              value: "4",
+            },
+          ],
+        },
+      ],
+      exceptions: [],
+      notifyOwners: true,
+      enabled: false,
+      ownerId: users[1]!.id,
+      createdAt: isoDaysAgo(60),
+      updatedAt: isoDaysAgo(3),
+    },
+    {
+      id: nextPolicyId(),
+      key: "compliance.eu-data-residency",
+      name: "EU data residency",
+      description:
+        "Payments workloads may only run in EU regions. Anything outside eu-west-1 / eu-central-1 is blocked.",
+      category: "compliance",
+      enforcement: "block",
+      scope: { kind: "team", values: [teamBySlug("payments").id] },
+      rules: [
+        {
+          id: "rl-eu-1",
+          name: "Non-EU region",
+          match: "all",
+          conditions: [
+            {
+              id: "cd-eu-1",
+              field: "region",
+              operator: "not_in",
+              value: "eu-west-1, eu-central-1",
+            },
+          ],
+        },
+      ],
+      exceptions: [],
+      notifyOwners: true,
+      enabled: true,
+      ownerId: users[4]!.id,
+      createdAt: isoDaysAgo(310),
+      updatedAt: isoDaysAgo(44),
+    },
+  ];
+
+  // --- alert rules ---
+  const alertRules: AlertRule[] = [
+    {
+      id: nextAlertId(),
+      name: "Production CPU saturation",
+      description:
+        "Sustained CPU pressure on production compute, paged to the on-call rotation.",
+      enabled: true,
+      severity: "sev2",
+      target: { kind: "environment", values: ["production"] },
+      match: "all",
+      conditions: [
+        {
+          id: "ac-cpu-1",
+          metric: "cpu",
+          comparator: "gte",
+          threshold: 85,
+          forMinutes: 10,
+        },
+      ],
+      channels: [
+        { id: "ch-cpu-1", kind: "pagerduty", target: "helix-platform-oncall" },
+        { id: "ch-cpu-2", kind: "slack", target: "#platform-alerts" },
+      ],
+      schedule: "always",
+      escalateAfterMinutes: 15,
+      escalateToChannelId: "ch-cpu-1",
+      suppressionMinutes: 30,
+      autoIncident: true,
+      ownerId: users[1]!.id,
+      createdAt: isoDaysAgo(120),
+      updatedAt: isoDaysAgo(9),
+      lastTriggeredAt: isoDaysAgo(1, 4),
+      triggers7d: 6,
+    },
+    {
+      id: nextAlertId(),
+      name: "Cost spike — any team",
+      description:
+        "Week-over-week spend jump above 25% on a single resource, routed to FinOps.",
+      enabled: true,
+      severity: "sev3",
+      target: { kind: "team", values: teams.slice(0, 4).map((t) => t.id) },
+      match: "any",
+      conditions: [
+        {
+          id: "ac-cost-1",
+          metric: "cost_spike_pct",
+          comparator: "gt",
+          threshold: 25,
+          forMinutes: 0,
+        },
+        {
+          id: "ac-cost-2",
+          metric: "monthly_cost",
+          comparator: "gt",
+          threshold: 9000,
+          forMinutes: 0,
+        },
+      ],
+      channels: [
+        { id: "ch-cost-1", kind: "email", target: "finops@helix.io" },
+        { id: "ch-cost-2", kind: "slack", target: "#finops-anomalies" },
+      ],
+      schedule: "business_hours",
+      escalateAfterMinutes: 0,
+      escalateToChannelId: null,
+      suppressionMinutes: 720,
+      autoIncident: false,
+      ownerId: users[4]!.id,
+      createdAt: isoDaysAgo(88),
+      updatedAt: isoDaysAgo(2),
+      lastTriggeredAt: isoDaysAgo(0, 7),
+      triggers7d: 14,
+    },
+    {
+      id: nextAlertId(),
+      name: "Budget burn — Data Platform",
+      description:
+        "Fires when the Data Platform monthly budget passes 90% before month end.",
+      enabled: true,
+      severity: "sev3",
+      target: { kind: "team", values: [teamBySlug("data-platform").id] },
+      match: "all",
+      conditions: [
+        {
+          id: "ac-burn-1",
+          metric: "budget_burn_pct",
+          comparator: "gte",
+          threshold: 90,
+          forMinutes: 0,
+        },
+      ],
+      channels: [
+        { id: "ch-burn-1", kind: "slack", target: "#data-platform-finops" },
+      ],
+      schedule: "business_hours",
+      escalateAfterMinutes: 0,
+      escalateToChannelId: null,
+      suppressionMinutes: 1440,
+      autoIncident: false,
+      ownerId: users[3]!.id,
+      createdAt: isoDaysAgo(51),
+      updatedAt: isoDaysAgo(11),
+      lastTriggeredAt: isoDaysAgo(2, 2),
+      triggers7d: 2,
+    },
+    {
+      id: nextAlertId(),
+      name: "Memory pressure — staging",
+      description: "Early-warning signal before staging soak tests fall over.",
+      enabled: false,
+      severity: "sev3",
+      target: { kind: "environment", values: ["staging"] },
+      match: "all",
+      conditions: [
+        {
+          id: "ac-mem-1",
+          metric: "memory",
+          comparator: "gte",
+          threshold: 90,
+          forMinutes: 20,
+        },
+      ],
+      channels: [{ id: "ch-mem-1", kind: "slack", target: "#staging-noise" }],
+      schedule: "off_hours",
+      escalateAfterMinutes: 0,
+      escalateToChannelId: null,
+      suppressionMinutes: 60,
+      autoIncident: false,
+      ownerId: users[2]!.id,
+      createdAt: isoDaysAgo(33),
+      updatedAt: isoDaysAgo(33),
+      lastTriggeredAt: null,
+      triggers7d: 0,
+    },
+  ];
+
   // --- activities & audit logs ---
   const activities: Activity[] = [];
   const auditLogs: AuditLog[] = [];
@@ -575,5 +938,9 @@ export function createDatabase(): Database {
     permissions,
     attachments,
     activities,
+    policies,
+    alertRules,
+    resourceConfigs: {},
+    scheduledChanges: [],
   };
 }

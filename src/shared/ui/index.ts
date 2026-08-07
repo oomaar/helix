@@ -1,8 +1,10 @@
 export { Avatar } from "./avatar";
 export { Badge, type BadgeTone } from "./badge";
 export { Button, type ButtonSize, type ButtonVariant } from "./button";
+export { Callout, type CalloutTone } from "./callout";
 export { Card, CardBody, CardHeader, CardSubtitle, CardTitle } from "./card";
 export { Chip } from "./chip";
+export { ChipGroup } from "./chip-group";
 export { Dialog } from "./dialog";
 export { Divider } from "./divider";
 export { EmptyState } from "./empty-state";
@@ -21,3 +23,5 @@ export { Select, type SelectOption } from "./select";
 export { Checkbox } from "./checkbox";
 export { Pagination } from "./pagination";
 export { Drawer } from "./drawer";
+export { Textarea } from "./textarea";
+export { Toast, useToast } from "./toast";

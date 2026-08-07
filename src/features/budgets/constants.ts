@@ -1,4 +1,5 @@
-import type { BudgetPeriod } from "@/lib/backend";
+import type { BudgetAction, BudgetPeriod } from "@/lib/backend";
+import type { SelectOption } from "@/shared/ui";
 
 export const PERIOD_FILTER_OPTIONS: readonly {
   value: BudgetPeriod | "all";
@@ -16,6 +17,22 @@ export const PERIOD_OPTIONS: readonly { value: BudgetPeriod; label: string }[] =
     { value: "quarterly", label: "Quarterly" },
     { value: "yearly", label: "Yearly" },
   ];
+
+/** Periods long enough for unspent allocation to roll forward. */
+export const ROLLOVER_PERIODS: readonly BudgetPeriod[] = [
+  "quarterly",
+  "yearly",
+];
+
+export const THRESHOLD_ACTION_LABELS: Readonly<Record<BudgetAction, string>> = {
+  notify: "Notify recipients",
+  notify_and_flag: "Notify + flag in Operations",
+  block_provisioning: "Block new provisioning",
+};
+
+export const THRESHOLD_ACTION_OPTIONS: readonly SelectOption[] = (
+  Object.keys(THRESHOLD_ACTION_LABELS) as BudgetAction[]
+).map((value) => ({ value, label: THRESHOLD_ACTION_LABELS[value] }));
 
 export type BudgetStatus = "over" | "near" | "ok";
 

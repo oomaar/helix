@@ -3,14 +3,21 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  AlertRulesIcon,
+  BudgetsIcon,
   DashboardIcon,
   DownloadIcon,
   type IconComponent,
   PlusIcon,
+  PoliciesIcon,
   SearchIcon,
 } from "@/shared/icons";
 import { cn } from "@/lib/utils";
-import { emitOpenProvisioning } from "@/shared/lib/app-events";
+import {
+  type CreateTarget,
+  emitOpenProvisioning,
+  requestCreate,
+} from "@/shared/lib/app-events";
 import { NAV_GROUPS } from "@/shared/nav/nav-config";
 import { useTheme } from "@/shared/theme/theme-provider";
 import { Dialog, EmptyState, Kbd } from "@/shared/ui";
@@ -37,6 +44,15 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       router.push(href);
       onClose();
     };
+    /**
+     * Navigate to the screen that owns a create form and ask it to open —
+     * "Create a policy" should land on the builder, not just the list.
+     */
+    const create = (href: string, target: CreateTarget) => () => {
+      router.push(href);
+      onClose();
+      requestCreate(target);
+    };
     const nav: Command[] = NAV_GROUPS.flatMap((group) =>
       group.items.map((item) => ({
         id: `nav:${item.id}`,
@@ -58,6 +74,30 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           onClose();
           emitOpenProvisioning();
         },
+      },
+      {
+        id: "action:new-budget",
+        label: "Create a budget",
+        group: "Actions",
+        icon: BudgetsIcon,
+        keywords: "new budget limit allocation finops",
+        perform: create("/budgets", "budget"),
+      },
+      {
+        id: "action:new-policy",
+        label: "Create a governance policy",
+        group: "Actions",
+        icon: PoliciesIcon,
+        keywords: "new policy guardrail enforcement compliance rule",
+        perform: create("/policies", "policy"),
+      },
+      {
+        id: "action:new-alert-rule",
+        label: "Create an alert rule",
+        group: "Actions",
+        icon: AlertRulesIcon,
+        keywords: "new alert rule threshold notification paging oncall",
+        perform: create("/alerts", "alert-rule"),
       },
       {
         id: "action:export",

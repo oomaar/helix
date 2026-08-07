@@ -61,6 +61,15 @@ export const FlagsIcon = icon([
 export const IntegrationsIcon = icon([
   "M9 2v6M15 2v6M6 8h12v3a6 6 0 0 1-12 0zM12 17v5",
 ]);
+export const PoliciesIcon = icon([
+  "M12 3l8 3v6c0 4.4-3.2 8.2-8 9-4.8-.8-8-4.6-8-9V6z",
+  "M9 12l2 2 4-4",
+]);
+export const AlertRulesIcon = icon([
+  "M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9",
+  "M13.7 21a2 2 0 0 1-3.4 0",
+  "M12 8v3",
+]);
 
 // Utility icons
 export const SearchIcon = icon([
@@ -88,6 +97,16 @@ export const ChevronLeftIcon = icon(["M15 6l-6 6 6 6"]);
 export const ChevronRightIcon = icon(["M9 6l6 6-6 6"]);
 export const ChevronUpDownIcon = icon(["M8 9l4-4 4 4M8 15l4 4 4-4"]);
 export const DownloadIcon = icon(["M12 3v12M8 11l4 4 4-4M4 21h16"]);
+export const InfoIcon = icon([
+  "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z",
+  "M12 11v5M12 8h.01",
+]);
+export const TrashIcon = icon([
+  "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13",
+  "M10 11v6M14 11v6",
+]);
+export const PencilIcon = icon(["M4 20h4L20 8l-4-4L4 16z", "M14 6l4 4"]);
+export const CopyIcon = icon(["M9 9h11v11H9z", "M15 5H4v11"]);
 export const HelixLogoIcon = icon([
   "M7 4c5 3 5 5 10 8M17 4c-5 3-5 5-10 8M7 12c5 3 5 5 10 8M17 12c-5 3-5 5-10 8",
 ]);

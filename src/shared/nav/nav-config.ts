@@ -1,5 +1,6 @@
 import type { IconComponent } from "@/shared/icons";
 import {
+  AlertRulesIcon,
   AnalyticsIcon,
   AnomaliesIcon,
   AuditIcon,
@@ -9,6 +10,7 @@ import {
   IntegrationsIcon,
   InvestigationIcon,
   OperationsIcon,
+  PoliciesIcon,
   ResourcesIcon,
   SettingsIcon,
   UsersIcon,
@@ -79,12 +81,24 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         href: "/anomalies",
         icon: AnomaliesIcon,
       },
+      {
+        id: "alerts",
+        label: "Alert rules",
+        href: "/alerts",
+        icon: AlertRulesIcon,
+      },
     ],
   },
   {
     label: "Govern",
     items: [
       { id: "budgets", label: "Budgets", href: "/budgets", icon: BudgetsIcon },
+      {
+        id: "policies",
+        label: "Policies",
+        href: "/policies",
+        icon: PoliciesIcon,
+      },
       { id: "audit", label: "Audit log", href: "/audit", icon: AuditIcon },
     ],
   },
@@ -117,7 +131,9 @@ export const CRUMB_MAP: Record<string, readonly [string, string]> = {
   "/operations": ["Operate", "Operations Center"],
   "/investigations": ["Operate", "Investigation"],
   "/anomalies": ["Operate", "Cost anomalies"],
+  "/alerts": ["Operate", "Alert rules"],
   "/budgets": ["Govern", "Budgets"],
+  "/policies": ["Govern", "Policies"],
   "/audit": ["Govern", "Audit log"],
   "/users": ["Administration", "Users & roles"],
   "/flags": ["Administration", "Feature flags"],

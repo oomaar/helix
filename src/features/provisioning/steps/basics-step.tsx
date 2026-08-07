@@ -1,6 +1,7 @@
 "use client";
 
 import type { Environment, Provider } from "@/lib/backend";
+import { FormRow } from "@/shared/forms";
 import { Field, Input, RadioGroup, Select } from "@/shared/ui";
 import {
   ENVIRONMENTS,
@@ -12,7 +13,7 @@ import type { StepProps } from "../types";
 
 export function BasicsStep({ draft, set, errors }: StepProps) {
   return (
-    <div className="space-y-4">
+    <>
       <Field
         label="Resource name"
         htmlFor="prov-name"
@@ -25,11 +26,12 @@ export function BasicsStep({ draft, set, errors }: StepProps) {
           value={draft.name}
           autoFocus
           placeholder="prod-orders-replica"
+          className="font-mono"
           onChange={(e) => set({ name: e.target.value })}
         />
       </Field>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <FormRow>
         <Field label="Provider" htmlFor="prov-provider">
           <Select
             id="prov-provider"
@@ -47,9 +49,14 @@ export function BasicsStep({ draft, set, errors }: StepProps) {
             onChange={(value) => set({ environment: value as Environment })}
           />
         </Field>
-      </div>
+      </FormRow>
 
-      <Field label="Resource type" htmlFor="prov-type" required>
+      <Field
+        label="Resource type"
+        htmlFor="prov-type"
+        required
+        hint="Determines the options available on the next step."
+      >
         <Select
           id="prov-type"
           value={draft.resourceType}
@@ -66,6 +73,6 @@ export function BasicsStep({ draft, set, errors }: StepProps) {
           }}
         />
       </Field>
-    </div>
+    </>
   );
 }

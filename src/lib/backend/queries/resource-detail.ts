@@ -16,6 +16,11 @@ import type {
 import { request } from "../client";
 import { getDatabase } from "../store";
 import { BACKEND_NOW } from "./metrics";
+import {
+  hydrateScheduledChange,
+  readResourceConfig,
+  type ScheduledChangeWithActor,
+} from "./resource-config";
 import { hydrateResource, type ResourceWithRelations } from "./resources";
 
 // --- deterministic helpers -------------------------------------------------
@@ -82,6 +87,8 @@ export type ResourceDetail = {
   attachments: readonly Attachment[];
   access: readonly AccessGrant[];
   anomaly: ResourceAnomaly | null;
+  /** Configuration changes deferred to a maintenance window. */
+  scheduledChanges: readonly ScheduledChangeWithActor[];
 };
 
 // --- config generator ------------------------------------------------------
@@ -89,58 +96,100 @@ export type ResourceDetail = {
 const ENGINES = ["PostgreSQL 15.4", "MySQL 8.0.36", "MariaDB 11.2"];
 const CACHE_ENGINES = ["Redis 7.1", "Valkey 7.2", "Memcached 1.6"];
 
+/**
+ * Presentation of a resource's configuration for the detail panel.
+ *
+ * Values come from `readResourceConfig`, the same source the Edit configuration
+ * form reads and writes, so an applied change is reflected here immediately.
+ * Only the flavour fields the editable config doesn't model (engine version,
+ * base image, health check) stay derived from the resource id.
+ */
 function buildConfig(r: ResourceWithRelations): ConfigItem[] {
   const seed = hash(r.id);
-  const storageTb = 1 + (seed % 4);
-  const iops = 6 + (seed % 10);
-  const replicas = 1 + (seed % 3);
-  const encryption = `AES-256 · KMS cmk-${r.team?.slug ?? "default"}`;
+  const config = readResourceConfig(r);
+  const storage = `${config.storageGb.toLocaleString()} GB gp3 · ${(config.iops / 1000).toFixed(0)}k IOPS`;
+  const encryption = `AES-256 · KMS ${config.encryptionKey}`;
+  const backups = config.pitr
+    ? `${config.backupRetentionDays} days · PITR on`
+    : `${config.backupRetentionDays} days · PITR off`;
 
   switch (r.kind) {
     case "database":
       return [
         { label: "Engine", value: pick(ENGINES, seed) },
-        { label: "Instance class", value: r.type },
+        { label: "Instance class", value: config.instanceType },
         {
           label: "Multi-AZ",
-          value:
-            r.environment === "production"
-              ? `Enabled · ${replicas} replicas`
-              : "Disabled",
+          value: config.multiAz
+            ? `Enabled · ${config.replicas} replica${config.replicas === 1 ? "" : "s"}`
+            : "Disabled",
         },
-        { label: "Storage", value: `${storageTb} TB gp3 · ${iops}k IOPS` },
-        { label: "Backup retention", value: "7 days · PITR on" },
+        { label: "Storage", value: storage },
+        { label: "Backup retention", value: backups },
+        { label: "Maintenance window", value: config.maintenanceWindow },
         { label: "Encryption", value: encryption },
+        {
+          label: "Public access",
+          value: config.publicAccess ? "Enabled" : "Disabled",
+        },
       ];
     case "cache":
       return [
         { label: "Engine", value: pick(CACHE_ENGINES, seed) },
-        { label: "Node type", value: r.type },
-        { label: "Nodes", value: `${1 + (seed % 6)} · cluster mode on` },
+        { label: "Node type", value: config.instanceType },
+        {
+          label: "Nodes",
+          value: `${config.instances} · cluster mode on`,
+        },
+        {
+          label: "Multi-AZ",
+          value: config.multiAz ? "Enabled" : "Disabled",
+        },
         { label: "Eviction", value: "allkeys-lru" },
         { label: "Encryption", value: encryption },
       ];
     case "cluster":
       return [
-        { label: "Version", value: r.type },
-        { label: "Node pool", value: `${2 + (seed % 8)} × ${r.type}` },
+        { label: "Version", value: config.instanceType },
+        {
+          label: "Node pool",
+          value: `${config.instances} × ${config.instanceType}`,
+        },
+        {
+          label: "Autoscaling",
+          value: config.autoscaling
+            ? `${config.minInstances}–${config.maxInstances} nodes`
+            : "Disabled",
+        },
         { label: "Networking", value: "VPC-CNI · private subnets" },
         { label: "Add-ons", value: "metrics-server, cluster-autoscaler" },
         { label: "Encryption", value: encryption },
       ];
     case "storage":
       return [
-        { label: "Class", value: r.type },
-        { label: "Capacity", value: `${storageTb} TB` },
+        { label: "Class", value: config.instanceType },
+        {
+          label: "Capacity",
+          value: `${config.storageGb.toLocaleString()} GB`,
+        },
         { label: "Redundancy", value: "Zone-redundant (ZRS)" },
         { label: "Versioning", value: "Enabled" },
+        {
+          label: "Public access",
+          value: config.publicAccess ? "Enabled" : "Disabled",
+        },
         { label: "Encryption", value: encryption },
       ];
     default:
       return [
-        { label: "Instance type", value: r.type },
-        { label: "Instances", value: `${r.instances} · autoscaling` },
-        { label: "vCPUs", value: `${2 * r.instances}` },
+        { label: "Instance type", value: config.instanceType },
+        {
+          label: "Instances",
+          value: config.autoscaling
+            ? `${config.instances} · autoscaling ${config.minInstances}–${config.maxInstances}`
+            : `${config.instances} · fixed`,
+        },
+        { label: "vCPUs", value: `${2 * config.instances}` },
         { label: "Image", value: `helix-base-${2024 + (seed % 2)}.0` },
         { label: "Health check", value: "HTTP :8080/healthz" },
         { label: "Encryption", value: encryption },
@@ -324,6 +373,9 @@ export async function getResourceDetail(
       attachments,
       access,
       anomaly: buildAnomaly(resource),
+      scheduledChanges: getDatabase()
+        .scheduledChanges.filter((s) => s.resourceId === id)
+        .map(hydrateScheduledChange),
     };
   });
 }

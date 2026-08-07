@@ -1,14 +1,6 @@
 import type { Environment, Provider, Region } from "@/lib/backend";
 import type { SelectOption } from "@/shared/ui";
 
-export const STEPS = [
-  "Basics",
-  "Configuration",
-  "Access & tags",
-  "Review",
-] as const;
-export type StepIndex = 0 | 1 | 2 | 3;
-
 export const PROVIDERS: readonly Provider[] = ["AWS", "Azure", "GCP"];
 
 export const ENVIRONMENTS: readonly { value: Environment; label: string }[] = [
