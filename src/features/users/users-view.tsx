@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   getOrgSummary,
   listMembers,
@@ -11,7 +11,15 @@ import {
 } from "@/lib/backend";
 import { SearchIcon } from "@/shared/icons";
 import { useAsync } from "@/shared/hooks/use-async";
-import { Button, Input, PageHeader, RadioGroup, Select } from "@/shared/ui";
+import {
+  Button,
+  Input,
+  PageHeader,
+  RadioGroup,
+  Select,
+  Toast,
+  useToast,
+} from "@/shared/ui";
 import { InviteDialog } from "./components/invite-dialog";
 import { MembersTable } from "./components/members-table";
 import { PermissionMatrix } from "./components/permission-matrix";
@@ -25,22 +33,16 @@ export function UsersView() {
   const [role, setRole] = useState<Role | "all">("all");
   const [inviteOpen, setInviteOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const toast = useToast();
 
   const summary = useAsync(() => getOrgSummary(), []);
   const members = useAsync(() => listMembers({ search, role }), [search, role]);
-
-  useEffect(() => {
-    if (!feedback) return;
-    const t = setTimeout(() => setFeedback(null), 3000);
-    return () => clearTimeout(t);
-  }, [feedback]);
 
   const onInvited = (name: string) => {
     setInviteOpen(false);
     members.reload();
     summary.reload();
-    setFeedback(`Invited ${name}`);
+    toast.show(`Invited ${name}`);
   };
 
   const runMemberAction = async (
@@ -53,7 +55,7 @@ export function UsersView() {
       await action();
       members.reload();
       summary.reload();
-      setFeedback(note);
+      toast.show(note);
     } finally {
       setBusyId(null);
     }
@@ -148,13 +150,7 @@ export function UsersView() {
         />
       ) : null}
 
-      {feedback ? (
-        <div className="fixed inset-x-0 bottom-5 z-50 flex justify-center px-4">
-          <div className="bg-raised border-border-strong text-text rounded-lg border px-4 py-2 text-[12.5px] shadow-(--shadow-elev-2)">
-            {feedback}
-          </div>
-        </div>
-      ) : null}
+      <Toast message={toast.message} />
     </div>
   );
 }

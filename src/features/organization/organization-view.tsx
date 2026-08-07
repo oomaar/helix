@@ -20,6 +20,8 @@ import {
   Select,
   Skeleton,
   Switch,
+  Toast,
+  useToast,
 } from "@/shared/ui";
 import { SettingsSection } from "./components/settings-section";
 import {
@@ -35,7 +37,7 @@ export function OrganizationView() {
   const [settings, setSettings] = useState<OrgSettings | null>(null);
   const [baseline, setBaseline] = useState<OrgSettings | null>(null);
   const [saving, setSaving] = useState(false);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const toast = useToast();
 
   useEffect(() => {
     let active = true;
@@ -49,12 +51,6 @@ export function OrganizationView() {
       active = false;
     };
   }, []);
-
-  useEffect(() => {
-    if (!feedback) return;
-    const t = setTimeout(() => setFeedback(null), 3000);
-    return () => clearTimeout(t);
-  }, [feedback]);
 
   const set = (patch: Partial<OrgSettings>) =>
     setSettings((prev) => (prev ? { ...prev, ...patch } : prev));
@@ -71,7 +67,7 @@ export function OrganizationView() {
       const saved = await updateOrgSettings(settings);
       setSettings(saved);
       setBaseline(saved);
-      setFeedback("Organization settings saved");
+      toast.show("Organization settings saved");
     } finally {
       setSaving(false);
     }
@@ -270,7 +266,7 @@ export function OrganizationView() {
                 size="sm"
                 variant="danger"
                 onClick={() =>
-                  setFeedback("Deleting an organization requires support.")
+                  toast.show("Deleting an organization requires support.")
                 }
               >
                 Delete organization
@@ -280,13 +276,7 @@ export function OrganizationView() {
         </div>
       )}
 
-      {feedback ? (
-        <div className="fixed inset-x-0 bottom-5 z-50 flex justify-center px-4">
-          <div className="bg-raised border-border-strong text-text rounded-lg border px-4 py-2 text-[12.5px] shadow-(--shadow-elev-2)">
-            {feedback}
-          </div>
-        </div>
-      ) : null}
+      <Toast message={toast.message} />
     </div>
   );
 }

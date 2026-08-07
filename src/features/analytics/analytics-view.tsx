@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   type AttributionDimension,
   getCostBandDistribution,
@@ -13,7 +13,7 @@ import {
 import { printDocument } from "@/lib/utils";
 import { DownloadIcon } from "@/shared/icons";
 import { useAsync } from "@/shared/hooks/use-async";
-import { Button, PageHeader, Select } from "@/shared/ui";
+import { Button, PageHeader, Select, Toast, useToast } from "@/shared/ui";
 import { AttributionPanel } from "./components/attribution-panel";
 import { CostBandPanel } from "./components/cost-band-panel";
 import { RecommendationsPanel } from "./components/recommendations-panel";
@@ -24,7 +24,7 @@ import { DIMENSION_OPTIONS } from "./constants";
 export function AnalyticsView() {
   const [dimension, setDimension] = useState<AttributionDimension>("team");
   const [applied, setApplied] = useState<ReadonlySet<string>>(new Set());
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const toast = useToast();
 
   const attribution = useAsync(
     () => getSpendAttribution(dimension),
@@ -35,15 +35,9 @@ export function AnalyticsView() {
   const costBand = useAsync(() => getCostBandDistribution(), []);
   const recs = useAsync(() => getOptimizationRecommendations(), []);
 
-  useEffect(() => {
-    if (!feedback) return;
-    const t = setTimeout(() => setFeedback(null), 3000);
-    return () => clearTimeout(t);
-  }, [feedback]);
-
   const onApply = (rec: Recommendation) => {
     setApplied((prev) => new Set(prev).add(rec.id));
-    setFeedback(`Applied: ${rec.title}`);
+    toast.show(`Applied: ${rec.title}`);
   };
 
   const dimensionLabel =
@@ -97,13 +91,7 @@ export function AnalyticsView() {
         />
       </div>
 
-      {feedback ? (
-        <div className="fixed inset-x-0 bottom-5 z-50 flex justify-center px-4">
-          <div className="bg-raised border-border-strong text-text rounded-lg border px-4 py-2 text-[12.5px] shadow-(--shadow-elev-2)">
-            {feedback}
-          </div>
-        </div>
-      ) : null}
+      <Toast message={toast.message} />
     </div>
   );
 }

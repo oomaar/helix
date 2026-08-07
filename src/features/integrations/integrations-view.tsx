@@ -9,7 +9,7 @@ import {
   setIntegrationConnected,
 } from "@/lib/backend";
 import { useAsync } from "@/shared/hooks/use-async";
-import { PageHeader, Skeleton } from "@/shared/ui";
+import { PageHeader, Skeleton, Toast, useToast } from "@/shared/ui";
 import { CloudAccountCard } from "./components/cloud-account-card";
 import { IntegrationCard } from "./components/integration-card";
 
@@ -28,7 +28,7 @@ export function IntegrationsView() {
   const accounts = useAsync(() => listCloudAccounts(), []);
   const [integrations, setIntegrations] = useState<Integration[] | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const toast = useToast();
 
   useEffect(() => {
     let active = true;
@@ -39,12 +39,6 @@ export function IntegrationsView() {
       active = false;
     };
   }, []);
-
-  useEffect(() => {
-    if (!feedback) return;
-    const t = setTimeout(() => setFeedback(null), 3000);
-    return () => clearTimeout(t);
-  }, [feedback]);
 
   const onToggle = async (integration: Integration) => {
     const next = !integration.connected;
@@ -57,14 +51,14 @@ export function IntegrationsView() {
     );
     try {
       await setIntegrationConnected(integration.id, next);
-      setFeedback(`${next ? "Connected" : "Disconnected"} ${integration.name}`);
+      toast.show(`${next ? "Connected" : "Disconnected"} ${integration.name}`);
     } finally {
       setBusyId(null);
     }
   };
 
   const onManage = (account: CloudAccount) =>
-    setFeedback(`Manage ${account.displayName} isn’t available in this demo.`);
+    toast.show(`Manage ${account.displayName} isn’t available in this demo.`);
 
   return (
     <div className="mx-auto max-w-350 px-4 py-5 md:p-[22px_26px_60px]">
@@ -111,13 +105,7 @@ export function IntegrationsView() {
         </div>
       )}
 
-      {feedback ? (
-        <div className="fixed inset-x-0 bottom-5 z-50 flex justify-center px-4">
-          <div className="bg-raised border-border-strong text-text rounded-lg border px-4 py-2 text-[12.5px] shadow-(--shadow-elev-2)">
-            {feedback}
-          </div>
-        </div>
-      ) : null}
+      <Toast message={toast.message} />
     </div>
   );
 }
