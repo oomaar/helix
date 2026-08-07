@@ -18,6 +18,7 @@ import {
 } from "@/lib/backend";
 import { moneyCompact } from "@/lib/utils";
 import { useProvisioning } from "@/features/provisioning";
+import { EditConfigurationWizard } from "@/features/resource-detail";
 import {
   RESOURCE_CREATED_EVENT,
   type ResourceCreatedDetail,
@@ -87,6 +88,8 @@ export function ResourcesView() {
     new Set(DEFAULT_VISIBLE_COLUMNS),
   );
   const [drawer, setDrawer] = useState<ResourceWithRelations | null>(null);
+  const [configResource, setConfigResource] =
+    useState<ResourceWithRelations | null>(null);
   const [savedViews, setSavedViews] = useState<SavedView[]>([]);
   const toast = useToast();
   const [pendingAction, setPendingAction] = useState<BulkAction | null>(null);
@@ -244,7 +247,7 @@ export function ResourcesView() {
       grid.reload();
       toast.show(`Restarted ${resource.name}`);
     } else if (action === "Edit config") {
-      setDrawer(resource);
+      setConfigResource(resource);
     } else {
       toast.show(`Optimization suggested for ${resource.name}`);
     }
@@ -394,6 +397,23 @@ export function ResourcesView() {
       </div>
 
       <ResourceDrawer resource={drawer} onClose={() => setDrawer(null)} />
+
+      {configResource ? (
+        <EditConfigurationWizard
+          resourceId={configResource.id}
+          onClose={() => setConfigResource(null)}
+          onApplied={(result) => {
+            setConfigResource(null);
+            grid.reload();
+            summary.reload();
+            toast.show(
+              result.scheduledFor
+                ? `Scheduled ${result.changes.length} change${result.changes.length === 1 ? "" : "s"} for ${result.scheduledFor}`
+                : `Applied ${result.changes.length} change${result.changes.length === 1 ? "" : "s"} to ${configResource.name}`,
+            );
+          }}
+        />
+      ) : null}
 
       {pendingAction ? (
         <BulkActionDialog

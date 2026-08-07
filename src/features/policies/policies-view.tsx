@@ -11,6 +11,7 @@ import {
 } from "@/lib/backend";
 import { PlusIcon, SearchIcon } from "@/shared/icons";
 import { useAsync } from "@/shared/hooks/use-async";
+import { useCreateRequest } from "@/shared/hooks/use-create-request";
 import {
   Button,
   Card,
@@ -51,6 +52,8 @@ export function PoliciesView() {
   } | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const toast = useToast();
+
+  useCreateRequest("policy", () => setBuilder({ policy: null }));
 
   const summary = useAsync(() => getPoliciesSummary(), []);
   const policies = useAsync(

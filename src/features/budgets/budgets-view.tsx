@@ -10,6 +10,7 @@ import {
 import { money } from "@/lib/utils";
 import { PlusIcon } from "@/shared/icons";
 import { useAsync } from "@/shared/hooks/use-async";
+import { useCreateRequest } from "@/shared/hooks/use-create-request";
 import {
   Button,
   Card,
@@ -30,6 +31,8 @@ export function BudgetsView() {
     budget: BudgetWithTeam | null;
   } | null>(null);
   const toast = useToast();
+
+  useCreateRequest("budget", () => setWizard({ budget: null }));
 
   const summary = useAsync(() => getBudgetsSummary(period), [period]);
   const budgets = useAsync(() => listBudgets(period), [period]);

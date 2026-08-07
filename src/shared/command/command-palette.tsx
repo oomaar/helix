@@ -13,7 +13,11 @@ import {
   SearchIcon,
 } from "@/shared/icons";
 import { cn } from "@/lib/utils";
-import { emitOpenProvisioning } from "@/shared/lib/app-events";
+import {
+  type CreateTarget,
+  emitOpenProvisioning,
+  requestCreate,
+} from "@/shared/lib/app-events";
 import { NAV_GROUPS } from "@/shared/nav/nav-config";
 import { useTheme } from "@/shared/theme/theme-provider";
 import { Dialog, EmptyState, Kbd } from "@/shared/ui";
@@ -39,6 +43,15 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     const go = (href: string) => () => {
       router.push(href);
       onClose();
+    };
+    /**
+     * Navigate to the screen that owns a create form and ask it to open —
+     * "Create a policy" should land on the builder, not just the list.
+     */
+    const create = (href: string, target: CreateTarget) => () => {
+      router.push(href);
+      onClose();
+      requestCreate(target);
     };
     const nav: Command[] = NAV_GROUPS.flatMap((group) =>
       group.items.map((item) => ({
@@ -68,7 +81,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         group: "Actions",
         icon: BudgetsIcon,
         keywords: "new budget limit allocation finops",
-        perform: go("/budgets"),
+        perform: create("/budgets", "budget"),
       },
       {
         id: "action:new-policy",
@@ -76,7 +89,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         group: "Actions",
         icon: PoliciesIcon,
         keywords: "new policy guardrail enforcement compliance rule",
-        perform: go("/policies"),
+        perform: create("/policies", "policy"),
       },
       {
         id: "action:new-alert-rule",
@@ -84,7 +97,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         group: "Actions",
         icon: AlertRulesIcon,
         keywords: "new alert rule threshold notification paging oncall",
-        perform: go("/alerts"),
+        perform: create("/alerts", "alert-rule"),
       },
       {
         id: "action:export",
