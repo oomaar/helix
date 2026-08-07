@@ -2,9 +2,11 @@ import { idFactory } from "@/lib/utils";
 import type {
   Activity,
   AuditLog,
+  ConfigChange,
   Resource,
   ResourceConfig,
   ResourceTag,
+  ScheduledChange,
 } from "../models";
 import { request } from "../client";
 import { getDatabase } from "../store";
@@ -37,8 +39,12 @@ function hash(value: string): number {
  * Current config for a resource: a previously applied override when one exists,
  * otherwise derived deterministically from the seeded resource so every
  * resource has a plausible starting configuration.
+ *
+ * Exported (and synchronous) because it is the single source of truth for a
+ * resource's settings — the detail screen's Configuration panel reads through
+ * here too, so an applied change shows up everywhere at once.
  */
-function readConfig(resource: Resource): ResourceConfig {
+export function readResourceConfig(resource: Resource): ResourceConfig {
   const db = getDatabase();
   const applied = db.resourceConfigs[resource.id];
   if (applied) return applied;
@@ -83,21 +89,12 @@ export async function getResourceConfig(
       name: resource.name,
       kind: resource.kind,
       monthlyCost: resource.monthlyCost,
-      config: readConfig(resource),
+      config: readResourceConfig(resource),
     };
   });
 }
 
 // --- diffing ---------------------------------------------------------------
-
-export type ConfigChange = {
-  field: keyof ResourceConfig;
-  label: string;
-  before: string;
-  after: string;
-  /** Applying this change restarts or briefly interrupts the resource. */
-  disruptive: boolean;
-};
 
 const FIELD_LABELS: Readonly<Record<keyof ResourceConfig, string>> = {
   instanceType: "Instance type",
@@ -248,7 +245,7 @@ export async function updateResourceConfig(
     const resource = db.resources.find((r) => r.id === id);
     if (!resource) return null;
 
-    const before = readConfig(resource);
+    const before = readResourceConfig(resource);
     const changes = diffResourceConfig(before, input.config);
     const requiresRestart = changes.some((c) => c.disruptive);
     const monthlyCostBefore = resource.monthlyCost;
@@ -265,6 +262,8 @@ export async function updateResourceConfig(
     const timestamp = BACKEND_NOW.toISOString();
     const immediate = input.applyWindow === "immediate";
 
+    const changeId = nextChangeId();
+
     if (immediate) {
       (db.resourceConfigs as MutableConfigMap)[resource.id] = {
         ...input.config,
@@ -278,9 +277,40 @@ export async function updateResourceConfig(
       target.monthlyCost = monthlyCostAfter;
       target.updatedAt = timestamp;
       if (requiresRestart) target.status = "provisioning";
+
+      // Applying now supersedes anything queued for a later window: leaving it
+      // pending would silently roll this change back at the next maintenance.
+      const superseded = db.scheduledChanges.filter(
+        (s) => s.resourceId !== resource.id,
+      );
+      (
+        db as { scheduledChanges: readonly ScheduledChange[] }
+      ).scheduledChanges = superseded;
+    } else {
+      const pending: ScheduledChange = {
+        id: changeId,
+        resourceId: resource.id,
+        config: {
+          ...input.config,
+          tags: input.config.tags.map((t) => ({ ...t })),
+        },
+        changes,
+        window: input.config.maintenanceWindow,
+        reason: input.changeReason,
+        requiresRestart,
+        monthlyCostAfter,
+        requestedById: db.users[0]!.id,
+        requestedAt: timestamp,
+      };
+      // One pending change per resource — a newer request replaces the old one.
+      (
+        db as { scheduledChanges: readonly ScheduledChange[] }
+      ).scheduledChanges = [
+        pending,
+        ...db.scheduledChanges.filter((s) => s.resourceId !== resource.id),
+      ];
     }
 
-    const changeId = nextChangeId();
     const count = `${changes.length} configuration change${changes.length === 1 ? "" : "s"}`;
 
     (db.activities as Activity[]).unshift({
@@ -320,5 +350,78 @@ export async function updateResourceConfig(
       monthlyCostBefore,
       monthlyCostAfter,
     };
+  });
+}
+
+// --- scheduled changes -----------------------------------------------------
+
+export type ScheduledChangeWithActor = ScheduledChange & {
+  actorName: string;
+  resourceName: string;
+};
+
+export function hydrateScheduledChange(
+  change: ScheduledChange,
+): ScheduledChangeWithActor {
+  const db = getDatabase();
+  return {
+    ...change,
+    actorName:
+      db.users.find((u) => u.id === change.requestedById)?.name ?? "Unknown",
+    resourceName:
+      db.resources.find((r) => r.id === change.resourceId)?.name ??
+      change.resourceId,
+  };
+}
+
+/** Pending changes, optionally narrowed to one resource. */
+export async function listScheduledChanges(
+  resourceId?: string,
+): Promise<readonly ScheduledChangeWithActor[]> {
+  return request(() =>
+    getDatabase()
+      .scheduledChanges.filter(
+        (s) => !resourceId || s.resourceId === resourceId,
+      )
+      .map(hydrateScheduledChange),
+  );
+}
+
+/** Drops a pending change before its window opens. */
+export async function cancelScheduledChange(
+  id: string,
+): Promise<{ cancelled: boolean }> {
+  return request(() => {
+    const db = getDatabase();
+    const target = db.scheduledChanges.find((s) => s.id === id);
+    if (!target) return { cancelled: false };
+
+    (db as { scheduledChanges: readonly ScheduledChange[] }).scheduledChanges =
+      db.scheduledChanges.filter((s) => s.id !== id);
+
+    const resource = db.resources.find((r) => r.id === target.resourceId);
+    const timestamp = BACKEND_NOW.toISOString();
+
+    (db.activities as Activity[]).unshift({
+      id: nextActivityId(),
+      kind: "update",
+      actorId: db.users[0]!.id,
+      targetId: target.resourceId,
+      targetLabel: resource?.name ?? target.resourceId,
+      timestamp,
+      message: `cancelled the scheduled configuration change on ${resource?.name ?? target.resourceId}`,
+    });
+
+    (db.auditLogs as AuditLog[]).unshift({
+      id: nextAuditId(),
+      actorId: db.users[0]!.id,
+      action: "update",
+      target: `${resource?.kind ?? "resource"}/${target.resourceId}`,
+      timestamp,
+      ip: "10.0.0.1",
+      metadata: { changeId: target.id, cancelled: true, window: target.window },
+    });
+
+    return { cancelled: true };
   });
 }

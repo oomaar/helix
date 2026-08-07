@@ -86,6 +86,36 @@ export type ResourceConfig = {
   tags: readonly ResourceTag[];
 };
 
+/** One field's before/after in a configuration change. */
+export type ConfigChange = {
+  field: keyof ResourceConfig;
+  label: string;
+  before: string;
+  after: string;
+  /** Applying this change restarts or briefly interrupts the resource. */
+  disruptive: boolean;
+};
+
+/**
+ * A configuration change deferred to the next maintenance window. Persisted so
+ * "apply later" is a tracked commitment the operator can review or cancel,
+ * rather than a message that disappears with the dialog.
+ */
+export type ScheduledChange = {
+  id: string;
+  resourceId: string;
+  /** Configuration to apply when the window opens. */
+  config: ResourceConfig;
+  changes: readonly ConfigChange[];
+  /** Maintenance window label, e.g. "sun:03:00-04:00 UTC". */
+  window: string;
+  reason: string;
+  requiresRestart: boolean;
+  monthlyCostAfter: number;
+  requestedById: string;
+  requestedAt: string;
+};
+
 export type Resource = {
   id: string;
   name: string;
@@ -396,4 +426,6 @@ export type Database = {
    * edit survives reopening the form.
    */
   resourceConfigs: Readonly<Record<string, ResourceConfig>>;
+  /** Configuration changes deferred to a maintenance window. */
+  scheduledChanges: readonly ScheduledChange[];
 };

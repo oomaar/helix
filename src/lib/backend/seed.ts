@@ -941,5 +941,6 @@ export function createDatabase(): Database {
     policies,
     alertRules,
     resourceConfigs: {},
+    scheduledChanges: [],
   };
 }
