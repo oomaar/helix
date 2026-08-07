@@ -7,7 +7,12 @@ import {
   createAlertRule,
   updateAlertRule,
 } from "@/lib/backend";
-import { useWizard, Wizard, WizardConfirmation } from "@/shared/forms";
+import {
+  useSubmitAction,
+  useWizard,
+  Wizard,
+  WizardConfirmation,
+} from "@/shared/forms";
 import { Badge, Button } from "@/shared/ui";
 import { ALERT_STEPS, alertRuleDraft, toAlertRuleInput } from "../helpers";
 import { SEVERITY_META } from "../constants";
@@ -34,24 +39,26 @@ export function AlertRuleBuilder({
     steps: ALERT_STEPS,
     initial: () => alertRuleDraft(rule),
   });
-  const [submitting, setSubmitting] = useState(false);
+  const action = useSubmitAction();
   const [saved, setSaved] = useState<AlertRuleSaveResult | null>(null);
 
   const { draft, set, errors, step } = wizard;
 
   const submit = () => {
-    wizard.submit(async () => {
-      setSubmitting(true);
-      try {
+    wizard.submit(() =>
+      action.run(async () => {
         const input = toAlertRuleInput(draft);
         const result = rule
           ? await updateAlertRule(rule.id, input)
           : await createAlertRule(input);
-        if (result) setSaved(result);
-      } finally {
-        setSubmitting(false);
-      }
-    });
+        if (!result) {
+          throw new Error(
+            "This alert rule no longer exists — it may have been deleted in another session.",
+          );
+        }
+        setSaved(result);
+      }),
+    );
   };
 
   return (
@@ -66,7 +73,9 @@ export function AlertRuleBuilder({
       labelledBy="alert-builder-title"
       onClose={onClose}
       onSubmit={submit}
-      submitting={submitting}
+      submitting={action.submitting}
+      error={action.error}
+      onDismissError={action.clearError}
       submitLabel={editing ? "Save rule" : "Create rule"}
       footerNote={
         <span className="flex items-center gap-1.5">
