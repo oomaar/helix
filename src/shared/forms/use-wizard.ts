@@ -21,6 +21,8 @@ export type WizardState<TDraft> = {
   isLast: boolean;
   /** Highest step index the user has reached (drives the progress sidebar). */
   furthest: number;
+  /** True once the draft differs from the values the wizard opened with. */
+  dirty: boolean;
 
   /** Live errors for the current step — empty until the step is attempted. */
   errors: FieldErrors;
@@ -66,6 +68,9 @@ export function useWizard<TDraft>({
   const [attempted, setAttempted] = useState<ReadonlySet<string>>(
     () => new Set(),
   );
+  // Serialised opening values, so "has the user typed anything?" survives
+  // navigation and doesn't depend on every field being compared by hand.
+  const [baseline, setBaseline] = useState(() => JSON.stringify(draft));
 
   const steps = useMemo(
     () => declared.filter((s) => (s.when ? s.when(draft) : true)),
@@ -91,18 +96,19 @@ export function useWizard<TDraft>({
 
   const reset = useCallback(
     (next?: TDraft) => {
-      setDraft(
+      const value =
         next ??
-          (typeof initial === "function"
-            ? (initial as () => TDraft)()
-            : initial),
-      );
+        (typeof initial === "function" ? (initial as () => TDraft)() : initial);
+      setDraft(value);
+      setBaseline(JSON.stringify(value));
       setRawIndex(0);
       setFurthest(0);
       setAttempted(new Set());
     },
     [initial],
   );
+
+  const dirty = JSON.stringify(draft) !== baseline;
 
   const errorsFor = useCallback(
     (stepId: string): FieldErrors => {
@@ -196,6 +202,7 @@ export function useWizard<TDraft>({
     isFirst: index === 0,
     isLast: index === lastIndex,
     furthest,
+    dirty,
     errors,
     errorsFor,
     hasErrors,
