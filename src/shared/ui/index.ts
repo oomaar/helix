@@ -21,3 +21,4 @@ export { Select, type SelectOption } from "./select";
 export { Checkbox } from "./checkbox";
 export { Pagination } from "./pagination";
 export { Drawer } from "./drawer";
+export { Textarea } from "./textarea";
