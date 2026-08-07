@@ -5,7 +5,12 @@ import { useState } from "react";
 import { submitProvisionRequest, type ProvisionResult } from "@/lib/backend";
 import { money, moneyCompact } from "@/lib/utils";
 import { emitResourceCreated } from "@/shared/lib/app-events";
-import { useWizard, Wizard, WizardConfirmation } from "@/shared/forms";
+import {
+  useSubmitAction,
+  useWizard,
+  Wizard,
+  WizardConfirmation,
+} from "@/shared/forms";
 import { Badge, Button } from "@/shared/ui";
 import { completeTags, emptyDraft, estimateCost } from "./helpers";
 import { AccessTagsStep } from "./steps/access-tags-step";
@@ -20,16 +25,15 @@ export function ProvisionWizard({ onClose }: { onClose: () => void }) {
     steps: PROVISION_STEPS,
     initial: emptyDraft,
   });
-  const [submitting, setSubmitting] = useState(false);
+  const action = useSubmitAction();
   const [result, setResult] = useState<ProvisionResult | null>(null);
 
   const { draft, set, errors, step } = wizard;
   const estimate = estimateCost(draft);
 
   const submit = () => {
-    wizard.submit(async () => {
-      setSubmitting(true);
-      try {
+    wizard.submit(() =>
+      action.run(async () => {
         const res = await submitProvisionRequest({
           name: draft.name.trim(),
           provider: draft.provider,
@@ -51,10 +55,8 @@ export function ProvisionWizard({ onClose }: { onClose: () => void }) {
         });
         setResult(res);
         emitResourceCreated(draft.name.trim());
-      } finally {
-        setSubmitting(false);
-      }
-    });
+      }),
+    );
   };
 
   return (
@@ -65,7 +67,9 @@ export function ProvisionWizard({ onClose }: { onClose: () => void }) {
       labelledBy="provision-wizard-title"
       onClose={onClose}
       onSubmit={submit}
-      submitting={submitting}
+      submitting={action.submitting}
+      error={action.error}
+      onDismissError={action.clearError}
       submitLabel="Submit request"
       footerNote={
         <span className="flex items-center gap-1.5">
