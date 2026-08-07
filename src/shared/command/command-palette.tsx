@@ -3,10 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  AlertRulesIcon,
+  BudgetsIcon,
   DashboardIcon,
   DownloadIcon,
   type IconComponent,
   PlusIcon,
+  PoliciesIcon,
   SearchIcon,
 } from "@/shared/icons";
 import { cn } from "@/lib/utils";
@@ -58,6 +61,30 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           onClose();
           emitOpenProvisioning();
         },
+      },
+      {
+        id: "action:new-budget",
+        label: "Create a budget",
+        group: "Actions",
+        icon: BudgetsIcon,
+        keywords: "new budget limit allocation finops",
+        perform: go("/budgets"),
+      },
+      {
+        id: "action:new-policy",
+        label: "Create a governance policy",
+        group: "Actions",
+        icon: PoliciesIcon,
+        keywords: "new policy guardrail enforcement compliance rule",
+        perform: go("/policies"),
+      },
+      {
+        id: "action:new-alert-rule",
+        label: "Create an alert rule",
+        group: "Actions",
+        icon: AlertRulesIcon,
+        keywords: "new alert rule threshold notification paging oncall",
+        perform: go("/alerts"),
       },
       {
         id: "action:export",
