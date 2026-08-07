@@ -44,8 +44,7 @@ export function ChipGroup({
       aria-label={ariaLabel}
       className={cn(
         "flex flex-wrap items-center gap-1.5",
-        invalid &&
-          "rounded-[8px] outline outline-offset-4 outline-[var(--color-danger)]",
+        invalid && "outline-danger rounded-[8px] outline outline-offset-4",
         className,
       )}
     >
