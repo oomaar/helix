@@ -80,11 +80,14 @@ export function Wizard<TDraft>({
    * straight through.
    */
   const requestClose = () => {
+    // A write is in flight: tearing the dialog down now would hide an outcome
+    // that is still going to happen.
+    if (submitting) return;
     if (confirmingDiscard) {
       setConfirmingDiscard(false);
       return;
     }
-    if (wizard.dirty && !overlay && !submitting) {
+    if (wizard.dirty && !overlay) {
       setConfirmingDiscard(true);
       return;
     }
