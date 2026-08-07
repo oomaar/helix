@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CheckIcon, ChevronDownIcon } from "@/shared/icons";
 import { cn } from "@/lib/utils";
+import { useFieldControl, useFieldInvalid } from "./field";
 
 export type SelectOption = { value: string; label: string };
 
@@ -48,7 +49,9 @@ export function Select({
   "aria-label": ariaLabel,
 }: SelectProps) {
   const generatedId = useId();
-  const listId = id ?? generatedId;
+  const control = useFieldControl(id);
+  const fieldInvalid = useFieldInvalid();
+  const listId = control.id ?? generatedId;
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -176,6 +179,8 @@ export function Select({
         aria-controls={`${listId}-listbox`}
         aria-expanded={open}
         aria-label={ariaLabel}
+        aria-invalid={invalid || fieldInvalid ? true : undefined}
+        aria-describedby={control["aria-describedby"]}
         aria-activedescendant={open ? `${listId}-opt-${active}` : undefined}
         onClick={() => (open ? setOpen(false) : openMenu())}
         onKeyDown={onKeyDown}
@@ -183,7 +188,7 @@ export function Select({
           "bg-surface border-border-token flex h-8 w-full items-center gap-2 rounded-[8px] border pr-2 pl-2.5 text-left font-sans text-[12.5px] transition-colors",
           "focus-visible:border-brand-line focus-visible:ring-brand-soft cursor-pointer focus-visible:ring-2 focus-visible:outline-none",
           open && "border-brand-line ring-brand-soft ring-2",
-          invalid && "border-danger",
+          (invalid || fieldInvalid) && "border-danger",
           disabled && "cursor-not-allowed opacity-50",
           className,
         )}

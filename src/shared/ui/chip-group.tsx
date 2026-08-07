@@ -2,6 +2,7 @@
 
 import { Chip } from "./chip";
 import { cn } from "@/lib/utils";
+import { useFieldGroup } from "./field";
 import type { SelectOption } from "./select";
 
 type ChipGroupProps = {
@@ -29,6 +30,7 @@ export function ChipGroup({
   invalid = false,
   className,
 }: ChipGroupProps) {
+  const group = useFieldGroup();
   const toggle = (optionValue: string) =>
     onChange(
       value.includes(optionValue)
@@ -41,7 +43,9 @@ export function ChipGroup({
   return (
     <div
       role="group"
+      {...group}
       aria-label={ariaLabel}
+      aria-labelledby={ariaLabel ? undefined : group["aria-labelledby"]}
       className={cn(
         "flex flex-wrap items-center gap-1.5",
         invalid && "outline-danger rounded-[8px] outline outline-offset-4",
