@@ -2,10 +2,15 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { applyBulkAction, getResourceDetail } from "@/lib/backend";
+import {
+  applyBulkAction,
+  cancelScheduledChange,
+  getResourceDetail,
+} from "@/lib/backend";
 import { useAsync } from "@/shared/hooks/use-async";
 import { Button, EmptyState, Skeleton, Toast, useToast } from "@/shared/ui";
 import { EditConfigurationWizard } from "./config-form/edit-configuration-wizard";
+import { ScheduledChangesPanel } from "./components/scheduled-changes-panel";
 import { AccessControl } from "./components/access-control";
 import { ActivityTimeline } from "./components/activity-timeline";
 import { AnomalyCallout } from "./components/anomaly-callout";
@@ -22,6 +27,7 @@ export function ResourceDetailView({ id }: ResourceDetailViewProps) {
   const detail = useAsync(() => getResourceDetail(id), [id]);
   const [busy, setBusy] = useState(false);
   const [editingConfig, setEditingConfig] = useState(false);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   const toast = useToast();
 
   const onRestart = async () => {
@@ -102,6 +108,24 @@ export function ResourceDetailView({ id }: ResourceDetailViewProps) {
             cpuSeries={d.cpuSeries}
             costSeries={d.costSeries}
             costDeltaPct={d.costDeltaPct}
+          />
+          <ScheduledChangesPanel
+            changes={d.scheduledChanges}
+            busyId={cancellingId}
+            onCancel={async (change) => {
+              setCancellingId(change.id);
+              try {
+                const { cancelled } = await cancelScheduledChange(change.id);
+                detail.reload();
+                toast.show(
+                  cancelled
+                    ? "Scheduled change cancelled"
+                    : "That change was already applied or cancelled",
+                );
+              } finally {
+                setCancellingId(null);
+              }
+            }}
           />
           <ConfigurationPanel config={d.config} />
           <RelatedResources related={d.related} />

@@ -10,7 +10,12 @@ import {
 } from "@/lib/backend";
 import { money } from "@/lib/utils";
 import { useAsync } from "@/shared/hooks/use-async";
-import { useWizard, Wizard, WizardConfirmation } from "@/shared/forms";
+import {
+  useSubmitAction,
+  useWizard,
+  Wizard,
+  WizardConfirmation,
+} from "@/shared/forms";
 import { Badge, Button, Dialog, EmptyState, Skeleton } from "@/shared/ui";
 import { changesFor, configDraft, configSteps, toConfig } from "./helpers";
 import { ConfigTagsStep } from "./steps/config-tags-step";
@@ -91,7 +96,7 @@ function ConfigForm({
     steps,
     initial: () => configDraft(snapshot),
   });
-  const [submitting, setSubmitting] = useState(false);
+  const action = useSubmitAction();
   const [result, setResult] = useState<ResourceConfigResult | null>(null);
 
   const { draft, set, errors, step } = wizard;
@@ -100,19 +105,21 @@ function ConfigForm({
   const delta = projected - snapshot.monthlyCost;
 
   const submit = () => {
-    wizard.submit(async () => {
-      setSubmitting(true);
-      try {
+    wizard.submit(() =>
+      action.run(async () => {
         const applied = await updateResourceConfig(snapshot.resourceId, {
           config: toConfig(draft),
           applyWindow: draft.applyWindow,
           changeReason: draft.changeReason.trim(),
         });
-        if (applied) setResult(applied);
-      } finally {
-        setSubmitting(false);
-      }
-    });
+        if (!applied) {
+          throw new Error(
+            `${snapshot.name} no longer exists — it may have been deleted while you were editing.`,
+          );
+        }
+        setResult(applied);
+      }),
+    );
   };
 
   return (
@@ -123,7 +130,9 @@ function ConfigForm({
       labelledBy="config-wizard-title"
       onClose={onClose}
       onSubmit={submit}
-      submitting={submitting}
+      submitting={action.submitting}
+      error={action.error}
+      onDismissError={action.clearError}
       submitLabel={
         draft.applyWindow === "immediate" ? "Apply changes" : "Schedule changes"
       }
