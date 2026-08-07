@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   type BudgetPeriod,
   type BudgetWithTeam,
@@ -17,32 +17,28 @@ import {
   PageHeader,
   Select,
   Skeleton,
+  Toast,
+  useToast,
 } from "@/shared/ui";
 import { BudgetCard } from "./components/budget-card";
-import { BudgetDialog } from "./components/budget-dialog";
+import { BudgetWizard } from "./components/budget-wizard";
 import { PERIOD_FILTER_OPTIONS } from "./constants";
 
 export function BudgetsView() {
   const [period, setPeriod] = useState<BudgetPeriod | "all">("all");
-  const [dialog, setDialog] = useState<{
+  const [wizard, setWizard] = useState<{
     budget: BudgetWithTeam | null;
   } | null>(null);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const toast = useToast();
 
   const summary = useAsync(() => getBudgetsSummary(period), [period]);
   const budgets = useAsync(() => listBudgets(period), [period]);
 
-  useEffect(() => {
-    if (!feedback) return;
-    const t = setTimeout(() => setFeedback(null), 3000);
-    return () => clearTimeout(t);
-  }, [feedback]);
-
   const onSaved = (name: string) => {
-    setDialog(null);
+    setWizard(null);
     summary.reload();
     budgets.reload();
-    setFeedback(`Saved budget · ${name}`);
+    toast.show(`Saved budget · ${name}`);
   };
 
   const stats = [
@@ -80,7 +76,7 @@ export function BudgetsView() {
             <Button
               size="sm"
               variant="primary"
-              onClick={() => setDialog({ budget: null })}
+              onClick={() => setWizard({ budget: null })}
             >
               <PlusIcon size={14} />
               New budget
@@ -116,7 +112,7 @@ export function BudgetsView() {
             title="No budgets yet"
             description="Create a budget to track a team's spend against a limit."
             action={
-              <Button size="sm" onClick={() => setDialog({ budget: null })}>
+              <Button size="sm" onClick={() => setWizard({ budget: null })}>
                 New budget
               </Button>
             }
@@ -128,27 +124,21 @@ export function BudgetsView() {
             <BudgetCard
               key={b.id}
               budget={b}
-              onEdit={(budget) => setDialog({ budget })}
+              onEdit={(budget) => setWizard({ budget })}
             />
           ))}
         </div>
       )}
 
-      {dialog ? (
-        <BudgetDialog
-          budget={dialog.budget}
-          onClose={() => setDialog(null)}
+      {wizard ? (
+        <BudgetWizard
+          budget={wizard.budget}
+          onClose={() => setWizard(null)}
           onSaved={onSaved}
         />
       ) : null}
 
-      {feedback ? (
-        <div className="fixed inset-x-0 bottom-5 z-50 flex justify-center px-4">
-          <div className="bg-raised border-border-strong text-text rounded-lg border px-4 py-2 text-[12.5px] shadow-(--shadow-elev-2)">
-            {feedback}
-          </div>
-        </div>
-      ) : null}
+      <Toast message={toast.message} />
     </div>
   );
 }
