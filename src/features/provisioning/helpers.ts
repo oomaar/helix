@@ -49,31 +49,46 @@ export function completeTags(tags: readonly TagPair[]): TagPair[] {
   return tags.filter((t) => t.key.trim() && t.value.trim());
 }
 
-/** Per-step validation. An empty object means the step is valid. */
-export function validateStep(draft: ProvisionDraft, step: number): StepErrors {
+// --- validation ------------------------------------------------------------
+// One validator per step; each returns an empty object when the step is valid.
+
+export function validateBasics(draft: ProvisionDraft): StepErrors {
   const errors: Record<string, string> = {};
-
-  if (step === 0) {
-    const name = draft.name.trim();
-    if (!name) errors.name = "Resource name is required.";
-    else if (!/^[a-z0-9-]+$/.test(name)) {
-      errors.name = "Use lowercase letters, numbers and hyphens only.";
-    }
+  const name = draft.name.trim();
+  if (!name) errors.name = "Resource name is required.";
+  else if (!/^[a-z0-9-]+$/.test(name)) {
+    errors.name = "Use lowercase letters, numbers and hyphens only.";
+  } else if (name.length < 3) {
+    errors.name = "Use at least 3 characters.";
   }
+  return errors;
+}
 
-  if (step === 1) {
-    const def = resourceTypeDef(draft.resourceType);
-    if (def?.storage && (!draft.storageGb || draft.storageGb <= 0)) {
+export function validateConfiguration(draft: ProvisionDraft): StepErrors {
+  const errors: Record<string, string> = {};
+  const def = resourceTypeDef(draft.resourceType);
+  if (def?.storage) {
+    if (!draft.storageGb || draft.storageGb <= 0) {
       errors.storageGb = "Enter a storage size greater than 0.";
+    } else if (draft.storageGb > 65536) {
+      errors.storageGb = "Maximum provisionable storage is 65,536 GB.";
     }
   }
+  return errors;
+}
 
-  if (step === 2) {
-    if (!draft.teamId) errors.teamId = "Select an owning team.";
-    if (completeTags(draft.tags).length === 0) {
-      errors.tags = "Add at least one complete cost-allocation tag.";
+export function validateAccess(draft: ProvisionDraft): StepErrors {
+  const errors: Record<string, string> = {};
+  if (!draft.teamId) errors.teamId = "Select an owning team.";
+  if (completeTags(draft.tags).length === 0) {
+    errors.tags = "Add at least one complete cost-allocation tag.";
+  } else {
+    const keys = completeTags(draft.tags).map((t) =>
+      t.key.trim().toLowerCase(),
+    );
+    if (new Set(keys).size !== keys.length) {
+      errors.tags = "Tag keys must be unique.";
     }
   }
-
   return errors;
 }

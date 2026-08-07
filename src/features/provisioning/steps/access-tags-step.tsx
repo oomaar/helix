@@ -1,9 +1,10 @@
 "use client";
 
 import { listTeams } from "@/lib/backend";
-import { CloseIcon, PlusIcon } from "@/shared/icons";
+import { CloseIcon } from "@/shared/icons";
 import { useAsync } from "@/shared/hooks/use-async";
-import { Button, Field, IconButton, Input, Select } from "@/shared/ui";
+import { FormSection, RepeatableList } from "@/shared/forms";
+import { Field, Input, Select } from "@/shared/ui";
 import { ROLE_OPTIONS } from "../constants";
 import { newTag } from "../helpers";
 import type { StepProps } from "../types";
@@ -15,12 +16,13 @@ export function AccessTagsStep({ draft, set, errors }: StepProps) {
   );
 
   return (
-    <div className="space-y-4">
+    <>
       <Field
         label="Owning team"
         htmlFor="prov-team"
         required
         error={errors.teamId}
+        hint="Drives budget checks, approvals and chargeback."
       >
         <Select
           id="prov-team"
@@ -80,20 +82,25 @@ export function AccessTagsStep({ draft, set, errors }: StepProps) {
         </div>
       </Field>
 
-      <Field
-        label="Cost allocation tags"
-        required
-        error={errors.tags}
-        hint="Key / value pairs used for chargeback."
+      <FormSection
+        title="Cost allocation tags"
+        description="Key / value pairs used for chargeback. At least one is required."
       >
-        <div className="space-y-2">
-          {draft.tags.map((tag) => (
-            <div key={tag.id} className="flex items-center gap-2">
+        <RepeatableList
+          items={draft.tags}
+          error={errors.tags}
+          addLabel="Add tag pair"
+          onAdd={() => set({ tags: [...draft.tags, newTag()] })}
+          onRemove={(id) =>
+            set({ tags: draft.tags.filter((t) => t.id !== id) })
+          }
+          renderRow={(tag) => (
+            <div className="flex items-center gap-2">
               <Input
                 aria-label="Tag key"
                 placeholder="key"
                 value={tag.key}
-                className="flex-1"
+                className="flex-1 font-mono"
                 onChange={(e) =>
                   set({
                     tags: draft.tags.map((t) =>
@@ -106,7 +113,7 @@ export function AccessTagsStep({ draft, set, errors }: StepProps) {
                 aria-label="Tag value"
                 placeholder="value"
                 value={tag.value}
-                className="flex-1"
+                className="flex-1 font-mono"
                 onChange={(e) =>
                   set({
                     tags: draft.tags.map((t) =>
@@ -115,28 +122,10 @@ export function AccessTagsStep({ draft, set, errors }: StepProps) {
                   })
                 }
               />
-              <IconButton
-                size={28}
-                aria-label="Remove tag"
-                disabled={draft.tags.length === 1}
-                onClick={() =>
-                  set({ tags: draft.tags.filter((t) => t.id !== tag.id) })
-                }
-              >
-                <CloseIcon size={14} />
-              </IconButton>
             </div>
-          ))}
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => set({ tags: [...draft.tags, newTag()] })}
-          >
-            <PlusIcon size={13} />
-            Add tag pair
-          </Button>
-        </div>
-      </Field>
-    </div>
+          )}
+        />
+      </FormSection>
+    </>
   );
 }
