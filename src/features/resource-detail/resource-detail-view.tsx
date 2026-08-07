@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { applyBulkAction, getResourceDetail } from "@/lib/backend";
 import { useAsync } from "@/shared/hooks/use-async";
-import { Button, EmptyState, Skeleton } from "@/shared/ui";
+import { Button, EmptyState, Skeleton, Toast, useToast } from "@/shared/ui";
+import { EditConfigurationWizard } from "./config-form/edit-configuration-wizard";
 import { AccessControl } from "./components/access-control";
 import { ActivityTimeline } from "./components/activity-timeline";
 import { AnomalyCallout } from "./components/anomaly-callout";
@@ -20,20 +21,15 @@ type ResourceDetailViewProps = { id: string };
 export function ResourceDetailView({ id }: ResourceDetailViewProps) {
   const detail = useAsync(() => getResourceDetail(id), [id]);
   const [busy, setBusy] = useState(false);
-  const [feedback, setFeedback] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!feedback) return;
-    const t = setTimeout(() => setFeedback(null), 3000);
-    return () => clearTimeout(t);
-  }, [feedback]);
+  const [editingConfig, setEditingConfig] = useState(false);
+  const toast = useToast();
 
   const onRestart = async () => {
     setBusy(true);
     try {
       await applyBulkAction("restart", [id]);
       detail.reload();
-      setFeedback("Restart requested");
+      toast.show("Restart requested");
     } finally {
       setBusy(false);
     }
@@ -94,7 +90,8 @@ export function ResourceDetailView({ id }: ResourceDetailViewProps) {
         resource={d.resource}
         busy={busy}
         onRestart={onRestart}
-        onNote={setFeedback}
+        onEditConfig={() => setEditingConfig(true)}
+        onNote={toast.show}
       />
 
       <div className="mt-5 grid grid-cols-12 gap-3.5">
@@ -116,23 +113,33 @@ export function ResourceDetailView({ id }: ResourceDetailViewProps) {
           <AccessControl
             access={d.access}
             onGrant={() =>
-              setFeedback("Access-grant flow isn’t available in this demo.")
+              toast.show("Access-grant flow isn’t available in this demo.")
             }
           />
           <AttachmentsPanel
             attachments={d.attachments}
-            onAdd={() => setFeedback("Upload isn’t available in this demo.")}
+            onAdd={() => toast.show("Upload isn’t available in this demo.")}
           />
         </div>
       </div>
 
-      {feedback ? (
-        <div className="fixed inset-x-0 bottom-5 z-50 flex justify-center px-4">
-          <div className="bg-raised border-border-strong text-text rounded-lg border px-4 py-2 text-[12.5px] shadow-(--shadow-elev-2)">
-            {feedback}
-          </div>
-        </div>
+      {editingConfig ? (
+        <EditConfigurationWizard
+          resourceId={id}
+          onClose={() => setEditingConfig(false)}
+          onApplied={(result) => {
+            setEditingConfig(false);
+            detail.reload();
+            toast.show(
+              result.scheduledFor
+                ? `Scheduled ${result.changes.length} change${result.changes.length === 1 ? "" : "s"} for ${result.scheduledFor}`
+                : `Applied ${result.changes.length} change${result.changes.length === 1 ? "" : "s"} · ${result.changeId}`,
+            );
+          }}
+        />
       ) : null}
+
+      <Toast message={toast.message} />
     </div>
   );
 }

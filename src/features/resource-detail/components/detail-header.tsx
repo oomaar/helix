@@ -10,6 +10,7 @@ type DetailHeaderProps = {
   resource: ResourceWithRelations;
   busy: boolean;
   onRestart: () => void;
+  onEditConfig: () => void;
   onNote: (message: string) => void;
 };
 
@@ -17,6 +18,7 @@ export function DetailHeader({
   resource,
   busy,
   onRestart,
+  onEditConfig,
   onNote,
 }: DetailHeaderProps) {
   return (
@@ -54,11 +56,7 @@ export function DetailHeader({
           >
             {busy ? "Restarting…" : "Restart"}
           </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => onNote("Edit config isn’t available in this demo.")}
-          >
+          <Button size="sm" variant="secondary" onClick={onEditConfig}>
             Edit config
           </Button>
           <Button
