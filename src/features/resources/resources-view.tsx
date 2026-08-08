@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   applyBulkAction,
@@ -25,8 +26,12 @@ import {
 } from "@/shared/lib/app-events";
 import { PlusIcon } from "@/shared/icons";
 import { useAsync } from "@/shared/hooks/use-async";
+import { useContextMenu } from "@/shared/hooks/use-context-menu";
+import { useSession } from "@/shared/session";
 import {
   Button,
+  ContextMenu,
+  type ContextMenuItem,
   EmptyState,
   PageHeader,
   Pagination,
@@ -253,7 +258,70 @@ export function ResourcesView() {
     }
   };
 
+  const router = useRouter();
   const provisioning = useProvisioning();
+  const { can } = useSession();
+  const rowMenu = useContextMenu<ResourceWithRelations>();
+
+  /**
+   * Right-click actions for a grid row. Mirrors the expanded-row quick actions
+   * and adds the clipboard shortcuts that only make sense per-row; write
+   * actions are hidden from roles without `edit`.
+   */
+  const rowMenuItems = (
+    resource: ResourceWithRelations,
+  ): readonly ContextMenuItem[] => {
+    const canEdit = can("resources", "edit");
+    const copy = (value: string, what: string) => () => {
+      void navigator.clipboard?.writeText(value);
+      toast.show(`Copied ${what}`);
+    };
+    return [
+      {
+        id: "open",
+        label: "Open details",
+        onSelect: () => router.push(`/resources/${resource.id}`),
+      },
+      {
+        id: "preview",
+        label: "Preview",
+        onSelect: () => setDrawer(resource),
+      },
+      {
+        id: "select",
+        label: selected.has(resource.id) ? "Deselect row" : "Select row",
+        separatorBefore: true,
+        onSelect: () => toggle(resource.id),
+      },
+      ...(canEdit
+        ? ([
+            {
+              id: "edit",
+              label: "Edit configuration",
+              onSelect: () => setConfigResource(resource),
+            },
+            {
+              id: "restart",
+              label: "Restart",
+              tone: "danger" as const,
+              onSelect: () => void onQuickAction("Restart", resource),
+            },
+          ] satisfies ContextMenuItem[])
+        : []),
+      {
+        id: "copy-name",
+        label: "Copy name",
+        separatorBefore: true,
+        onSelect: copy(resource.name, "resource name"),
+      },
+      {
+        id: "copy-id",
+        label: "Copy resource ID",
+        hint: resource.id,
+        onSelect: copy(resource.id, "resource ID"),
+      },
+    ];
+  };
 
   const description = summary.data
     ? `${summary.data.total.toLocaleString()} resources across ${summary.data.providers.join(", ")} · ${moneyCompact(summary.data.monthlyCost)}/mo blended`
@@ -381,6 +449,7 @@ export function ResourcesView() {
               onToggleMany={toggleMany}
               onOpen={setDrawer}
               onQuickAction={onQuickAction}
+              onContextMenu={rowMenu.onContextMenu}
               allVisibleIds={allVisibleIds}
             />
           )}
@@ -397,6 +466,15 @@ export function ResourcesView() {
       </div>
 
       <ResourceDrawer resource={drawer} onClose={() => setDrawer(null)} />
+
+      {rowMenu.opened ? (
+        <ContextMenu
+          label={`Actions for ${rowMenu.opened.target.name}`}
+          anchor={rowMenu.opened.anchor}
+          items={rowMenuItems(rowMenu.opened.target)}
+          onClose={rowMenu.close}
+        />
+      ) : null}
 
       {configResource ? (
         <EditConfigurationWizard

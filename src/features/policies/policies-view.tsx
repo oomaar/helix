@@ -11,10 +11,14 @@ import {
 } from "@/lib/backend";
 import { PlusIcon, SearchIcon } from "@/shared/icons";
 import { useAsync } from "@/shared/hooks/use-async";
+import { useContextMenu } from "@/shared/hooks/use-context-menu";
+import { useSession } from "@/shared/session";
 import { useCreateRequest } from "@/shared/hooks/use-create-request";
 import {
   Button,
   Card,
+  ContextMenu,
+  type ContextMenuItem,
   EmptyState,
   Input,
   PageHeader,
@@ -54,6 +58,38 @@ export function PoliciesView() {
   // Enabled-state applied locally ahead of the server confirming it.
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const toast = useToast();
+  const { can } = useSession();
+  const cardMenu = useContextMenu<PolicyWithRelations>();
+
+  const policyMenuItems = (
+    policy: PolicyWithRelations,
+  ): readonly ContextMenuItem[] => {
+    const canEdit = can("policies", "edit");
+    return [
+      {
+        id: "edit",
+        label: canEdit ? "Edit policy" : "View policy",
+        onSelect: () => setBuilder({ policy }),
+      },
+      {
+        id: "toggle",
+        label: policy.enabled ? "Disable policy" : "Enable policy",
+        disabled: !canEdit,
+        separatorBefore: true,
+        onSelect: () => onToggle(policy, !policy.enabled),
+      },
+      {
+        id: "copy-key",
+        label: "Copy policy key",
+        hint: policy.key,
+        separatorBefore: true,
+        onSelect: () => {
+          void navigator.clipboard?.writeText(policy.key);
+          toast.show("Copied policy key");
+        },
+      },
+    ];
+  };
 
   useCreateRequest("policy", () => setBuilder({ policy: null }));
 
@@ -247,6 +283,7 @@ export function PoliciesView() {
               busy={busyId === policy.id}
               onEdit={(p) => setBuilder({ policy: p })}
               onToggle={onToggle}
+              onContextMenu={cardMenu.onContextMenu}
             />
           ))}
         </div>
@@ -257,6 +294,15 @@ export function PoliciesView() {
           policy={builder.policy}
           onClose={() => setBuilder(null)}
           onSaved={onSaved}
+        />
+      ) : null}
+
+      {cardMenu.opened ? (
+        <ContextMenu
+          label={`Actions for ${cardMenu.opened.target.name}`}
+          anchor={cardMenu.opened.anchor}
+          items={policyMenuItems(cardMenu.opened.target)}
+          onClose={cardMenu.close}
         />
       ) : null}
 

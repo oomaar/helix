@@ -19,5 +19,9 @@ export type ResourceTableProps = {
   onToggleMany: (ids: string[], selected: boolean) => void;
   onOpen: (resource: ResourceWithRelations) => void;
   onQuickAction: (action: string, resource: ResourceWithRelations) => void;
+  onContextMenu: (
+    event: React.MouseEvent,
+    resource: ResourceWithRelations,
+  ) => void;
   allVisibleIds: readonly string[];
 };

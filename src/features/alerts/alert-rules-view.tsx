@@ -10,10 +10,14 @@ import {
 } from "@/lib/backend";
 import { PlusIcon, SearchIcon } from "@/shared/icons";
 import { useAsync } from "@/shared/hooks/use-async";
+import { useContextMenu } from "@/shared/hooks/use-context-menu";
+import { useSession } from "@/shared/session";
 import { useCreateRequest } from "@/shared/hooks/use-create-request";
 import {
   Button,
   Card,
+  ContextMenu,
+  type ContextMenuItem,
   EmptyState,
   Input,
   PageHeader,
@@ -47,6 +51,37 @@ export function AlertRulesView() {
   // Enabled-state applied locally ahead of the server confirming it.
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const toast = useToast();
+  const { can } = useSession();
+  const rowMenu = useContextMenu<AlertRuleWithRelations>();
+
+  const ruleMenuItems = (
+    rule: AlertRuleWithRelations,
+  ): readonly ContextMenuItem[] => {
+    const canEdit = can("alerts", "edit");
+    return [
+      {
+        id: "edit",
+        label: canEdit ? "Edit rule" : "View rule",
+        onSelect: () => setBuilder({ rule }),
+      },
+      {
+        id: "toggle",
+        label: rule.enabled ? "Mute rule" : "Activate rule",
+        disabled: !canEdit,
+        separatorBefore: true,
+        onSelect: () => onToggle(rule, !rule.enabled),
+      },
+      {
+        id: "copy-name",
+        label: "Copy rule name",
+        separatorBefore: true,
+        onSelect: () => {
+          void navigator.clipboard?.writeText(rule.name);
+          toast.show("Copied rule name");
+        },
+      },
+    ];
+  };
 
   useCreateRequest("alert-rule", () => setBuilder({ rule: null }));
 
@@ -228,6 +263,7 @@ export function AlertRulesView() {
               busy={busyId === rule.id}
               onEdit={(r) => setBuilder({ rule: r })}
               onToggle={onToggle}
+              onContextMenu={rowMenu.onContextMenu}
             />
           ))}
         </div>
@@ -238,6 +274,15 @@ export function AlertRulesView() {
           rule={builder.rule}
           onClose={() => setBuilder(null)}
           onSaved={onSaved}
+        />
+      ) : null}
+
+      {rowMenu.opened ? (
+        <ContextMenu
+          label={`Actions for ${rowMenu.opened.target.name}`}
+          anchor={rowMenu.opened.anchor}
+          items={ruleMenuItems(rowMenu.opened.target)}
+          onClose={rowMenu.close}
         />
       ) : null}
 

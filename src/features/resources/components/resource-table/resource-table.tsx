@@ -18,6 +18,7 @@ export function ResourceTable({
   onToggleMany,
   onOpen,
   onQuickAction,
+  onContextMenu,
   allVisibleIds,
 }: ResourceTableProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -49,6 +50,7 @@ export function ResourceTable({
       onToggleExpand={() => setExpanded((e) => (e === r.id ? null : r.id))}
       onOpen={() => onOpen(r)}
       onQuickAction={onQuickAction}
+      onContextMenu={(event) => onContextMenu(event, r)}
     />
   );
 
