@@ -112,6 +112,9 @@ export const TrashIcon = icon([
 ]);
 export const PencilIcon = icon(["M4 20h4L20 8l-4-4L4 16z", "M14 6l4 4"]);
 export const CopyIcon = icon(["M9 9h11v11H9z", "M15 5H4v11"]);
+export const GripIcon = icon([
+  "M9 6h.01M9 12h.01M9 18h.01M15 6h.01M15 12h.01M15 18h.01",
+]);
 export const HelixLogoIcon = icon([
   "M7 4c5 3 5 5 10 8M17 4c-5 3-5 5-10 8M7 12c5 3 5 5 10 8M17 12c-5 3-5 5-10 8",
 ]);

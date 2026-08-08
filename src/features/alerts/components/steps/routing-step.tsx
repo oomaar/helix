@@ -2,6 +2,7 @@
 
 import type { AlertChannel, AlertChannelKind } from "@/lib/backend";
 import { FormSection, RepeatableList } from "@/shared/forms";
+import { moveItem } from "@/shared/hooks/use-drag-reorder";
 import { Callout, Field, Input, Select, Switch } from "@/shared/ui";
 import { CHANNEL_META, CHANNEL_OPTIONS, SEVERITY_META } from "../../constants";
 import { newChannel } from "../../helpers";
@@ -51,6 +52,12 @@ export function RoutingStep({ draft, set, errors }: AlertStepProps) {
                   : draft.escalateToChannelId,
             });
           }}
+          onReorder={(from, to) =>
+            set({ channels: moveItem(draft.channels, from, to) })
+          }
+          describeRow={(channel) =>
+            `${CHANNEL_META[channel.kind].label} destination`
+          }
           renderRow={(channel) => {
             const meta = CHANNEL_META[channel.kind];
             return (

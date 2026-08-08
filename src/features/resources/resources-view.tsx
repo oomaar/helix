@@ -27,6 +27,7 @@ import {
 import { PlusIcon } from "@/shared/icons";
 import { useAsync } from "@/shared/hooks/use-async";
 import { useContextMenu } from "@/shared/hooks/use-context-menu";
+import { moveItem } from "@/shared/hooks/use-drag-reorder";
 import { useSession } from "@/shared/session";
 import {
   Button,
@@ -91,6 +92,11 @@ export function ResourcesView() {
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<ColumnKey>>(
     new Set(DEFAULT_VISIBLE_COLUMNS),
+  );
+  // Display order is explicit state rather than the constant's order, so the
+  // grid can be rearranged to match how a given team reads its estate.
+  const [columnOrder, setColumnOrder] = useState<readonly ColumnKey[]>(() =>
+    COLUMNS.map((c) => c.key),
   );
   const [drawer, setDrawer] = useState<ResourceWithRelations | null>(null);
   const [configResource, setConfigResource] =
@@ -158,7 +164,14 @@ export function ResourcesView() {
   const isEmpty = Boolean(
     data && (flat ? flat.items.length === 0 : grouped!.groups.length === 0),
   );
-  const columns = COLUMNS.filter((c) => visibleColumns.has(c.key));
+  const orderedColumns = useMemo(
+    () =>
+      columnOrder
+        .map((key) => COLUMNS.find((c) => c.key === key))
+        .filter((c) => c !== undefined),
+    [columnOrder],
+  );
+  const columns = orderedColumns.filter((c) => visibleColumns.has(c.key));
 
   // --- filter handlers ---
   const applyFilter = (next: FilterGroupNode) => {
@@ -336,6 +349,10 @@ export function ResourcesView() {
           <>
             <ColumnsMenu
               visible={visibleColumns}
+              order={orderedColumns}
+              onReorder={(from, to) =>
+                setColumnOrder((prev) => moveItem(prev, from, to))
+              }
               onToggle={(key) =>
                 setVisibleColumns((prev) => {
                   const next = new Set(prev);
