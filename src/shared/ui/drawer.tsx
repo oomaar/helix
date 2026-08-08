@@ -54,7 +54,7 @@ export function Drawer({
   return createPortal(
     <div className="fixed inset-0 z-100 flex justify-end">
       <div
-        className="absolute inset-0 bg-[color-mix(in_srgb,var(--color-bg)_55%,transparent)] backdrop-blur-[2px]"
+        className="animate-fade-in absolute inset-0 bg-[color-mix(in_srgb,var(--color-bg)_55%,transparent)] backdrop-blur-[2px]"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -64,9 +64,8 @@ export function Drawer({
         aria-modal="true"
         aria-labelledby={labelledBy}
         tabIndex={-1}
-        style={{ animation: "hx-slide-in-right 0.2s ease" }}
         className={cn(
-          "bg-raised border-border-strong relative z-10 flex h-full w-full max-w-md flex-col border-l shadow-(--shadow-elev-2) outline-none",
+          "bg-raised border-border-strong animate-slide-in-right relative z-10 flex h-full w-full max-w-md flex-col border-l shadow-(--shadow-elev-2) outline-none",
           className,
         )}
       >

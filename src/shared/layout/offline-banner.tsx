@@ -37,8 +37,9 @@ export function OfflineBanner() {
       aria-live="polite"
       data-print-hide
       className={cn(
-        "flex flex-none items-center justify-center gap-2 border-b px-4 py-1.5 text-[12px] font-medium",
-        "animate-[hx-fade_.2s_ease]",
+        "flex flex-none items-center justify-center gap-2 border-b",
+        "px-4 py-1.5 text-[12px] font-medium",
+        "animate-fade-in",
         online
           ? "bg-success-soft text-success border-[color-mix(in_srgb,var(--color-success)_35%,transparent)]"
           : "bg-warn-soft text-warn border-[color-mix(in_srgb,var(--color-warn)_45%,transparent)]",

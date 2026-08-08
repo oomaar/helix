@@ -155,7 +155,7 @@ export function Wizard<TDraft>({
             <div className="flex min-h-0 min-w-0 flex-1 flex-col">
               <div
                 key={step.id}
-                className="min-h-0 flex-1 animate-[hx-fade_.18s_ease] overflow-y-auto px-5 py-4 md:px-6"
+                className="animate-fade-in min-h-0 flex-1 overflow-y-auto px-5 py-4 md:px-6"
               >
                 <h3
                   ref={headingRef}
@@ -209,7 +209,7 @@ export function Wizard<TDraft>({
                   <Button
                     variant="primary"
                     onClick={onSubmit}
-                    disabled={submitting}
+                    loading={submitting}
                     className={cn(submitting && "pointer-events-none")}
                   >
                     {submitting ? "Submitting…" : submitLabel}

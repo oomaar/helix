@@ -25,7 +25,7 @@ export function Toast({ message, className }: ToastProps) {
       <div
         className={cn(
           "bg-raised border-border-strong text-text rounded-lg border px-4 py-2 text-[12.5px] shadow-(--shadow-elev-2)",
-          "animate-[hx-fade_.18s_ease]",
+          "animate-slide-up",
           className,
         )}
       >

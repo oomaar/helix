@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import { Spinner } from "./spinner";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 export type ButtonSize = "sm" | "md";
@@ -8,6 +9,8 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
   size?: ButtonSize;
   fullWidth?: boolean;
+  /** Shows a spinner and blocks interaction while an action is in flight. */
+  loading?: boolean;
 };
 
 const VARIANTS: Record<ButtonVariant, string> = {
@@ -29,13 +32,19 @@ export function Button({
   variant = "secondary",
   size = "md",
   fullWidth,
+  loading = false,
+  disabled,
   className,
   type = "button",
+  children,
   ...rest
 }: ButtonProps) {
   return (
     <button
       type={type}
+      // `aria-busy` announces the wait; `disabled` stops a second submit.
+      aria-busy={loading || undefined}
+      disabled={disabled ?? loading}
       className={cn(
         "focus-visible:ring-brand-line inline-flex cursor-pointer items-center justify-center font-sans font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
         VARIANTS[variant],
@@ -44,6 +53,9 @@ export function Button({
         className,
       )}
       {...rest}
-    />
+    >
+      {loading ? <Spinner size={size === "sm" ? 12 : 14} /> : null}
+      {children}
+    </button>
   );
 }
