@@ -1,3 +1,4 @@
+import type { PermissionScope } from "@/lib/backend";
 import type { IconComponent } from "@/shared/icons";
 import {
   AlertRulesIcon,
@@ -27,6 +28,8 @@ export type NavItem = {
   badgeKind?: NavBadgeKind;
   /** Route prefixes considered "active" in addition to exact match. */
   activeWhen?: readonly string[];
+  /** Hidden from the sidebar when the role can't view this scope. */
+  scope?: PermissionScope;
 };
 
 export type NavGroup = {
@@ -49,6 +52,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Analytics",
         href: "/analytics",
         icon: AnalyticsIcon,
+        scope: "budgets",
       },
     ],
   },
@@ -60,6 +64,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Resources",
         href: "/resources",
         icon: ResourcesIcon,
+        scope: "resources",
         activeWhen: ["/resources"],
       },
       {
@@ -67,12 +72,14 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Operations",
         href: "/operations",
         icon: OperationsIcon,
+        scope: "incidents",
       },
       {
         id: "investigations",
         label: "Investigation",
         href: "/investigations",
         icon: InvestigationIcon,
+        scope: "incidents",
         activeWhen: ["/investigations"],
       },
       {
@@ -80,44 +87,73 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Cost anomalies",
         href: "/anomalies",
         icon: AnomaliesIcon,
+        scope: "budgets",
       },
       {
         id: "alerts",
         label: "Alert rules",
         href: "/alerts",
         icon: AlertRulesIcon,
+        scope: "alerts",
       },
     ],
   },
   {
     label: "Govern",
     items: [
-      { id: "budgets", label: "Budgets", href: "/budgets", icon: BudgetsIcon },
+      {
+        id: "budgets",
+        label: "Budgets",
+        href: "/budgets",
+        icon: BudgetsIcon,
+        scope: "budgets",
+      },
       {
         id: "policies",
         label: "Policies",
         href: "/policies",
         icon: PoliciesIcon,
+        scope: "policies",
       },
-      { id: "audit", label: "Audit log", href: "/audit", icon: AuditIcon },
+      {
+        id: "audit",
+        label: "Audit log",
+        href: "/audit",
+        icon: AuditIcon,
+        scope: "audit",
+      },
     ],
   },
   {
     label: "Administration",
     items: [
-      { id: "users", label: "Users & roles", href: "/users", icon: UsersIcon },
-      { id: "flags", label: "Feature flags", href: "/flags", icon: FlagsIcon },
+      {
+        id: "users",
+        label: "Users & roles",
+        href: "/users",
+        icon: UsersIcon,
+        scope: "users",
+      },
+      {
+        id: "flags",
+        label: "Feature flags",
+        href: "/flags",
+        icon: FlagsIcon,
+        scope: "flags",
+      },
       {
         id: "integrations",
         label: "Integrations",
         href: "/integrations",
         icon: IntegrationsIcon,
+        scope: "integrations",
       },
       {
         id: "settings",
         label: "Organization",
         href: "/settings",
         icon: SettingsIcon,
+        scope: "users",
       },
     ],
   },
