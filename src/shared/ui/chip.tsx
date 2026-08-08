@@ -16,7 +16,7 @@ export function Chip({
     <button
       type={type}
       className={cn(
-        "rounded-control h-7.5 cursor-pointer border px-3 text-[12px] font-medium transition-colors",
+        "rounded-control h-7.5 cursor-pointer border px-3 text-[12px] font-medium transition-[color,background-color,border-color,transform] active:scale-[0.97]",
         active
           ? "border-brand bg-brand-soft text-brand font-semibold"
           : "bg-surface text-text-2 border-border-token hover:border-border-strong",

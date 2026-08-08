@@ -33,7 +33,7 @@ export function Checkbox({
         onChange(!checked);
       }}
       className={cn(
-        "flex h-4 w-4 flex-none cursor-pointer items-center justify-center rounded-[5px] border transition-colors",
+        "flex h-4 w-4 flex-none cursor-pointer items-center justify-center rounded-[5px] border transition-[color,background-color,border-color,transform] active:scale-90 disabled:active:scale-100",
         filled
           ? "bg-brand border-brand text-white"
           : "bg-surface border-border-strong hover:border-text-3",

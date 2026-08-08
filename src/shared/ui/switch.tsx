@@ -27,7 +27,7 @@ export function Switch({
   const track = (
     <span
       className={cn(
-        "relative inline-flex h-4.5 w-8 flex-none items-center rounded-full transition-colors",
+        "relative inline-flex h-4.5 w-8 flex-none items-center rounded-full transition-[background-color,transform] group-active:scale-95",
         checked ? "bg-brand" : "bg-border-strong",
       )}
     >
@@ -53,7 +53,7 @@ export function Switch({
     return (
       <button
         {...common}
-        className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+        className="group cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
       >
         {track}
       </button>
@@ -63,7 +63,7 @@ export function Switch({
   return (
     <button
       {...common}
-      className="flex w-full cursor-pointer items-center justify-between gap-3 text-left disabled:cursor-not-allowed disabled:opacity-50"
+      className="group flex w-full cursor-pointer items-center justify-between gap-3 text-left disabled:cursor-not-allowed disabled:opacity-50"
     >
       <span className="min-w-0">
         <span className="text-text block text-[12.5px] font-medium">

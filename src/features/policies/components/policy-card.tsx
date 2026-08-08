@@ -26,6 +26,7 @@ export function PolicyCard({
 
   return (
     <Card
+      interactive
       className={cn("p-4", !policy.enabled && "opacity-70")}
       onContextMenu={(event) => onContextMenu(event, policy)}
     >

@@ -34,6 +34,7 @@ export function AlertRuleRow({
 
   return (
     <Card
+      interactive
       className={cn("p-4", !rule.enabled && "opacity-70")}
       onContextMenu={(event) => onContextMenu(event, rule)}
     >

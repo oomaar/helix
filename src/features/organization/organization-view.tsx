@@ -277,7 +277,7 @@ export function OrganizationView() {
         </div>
       )}
 
-      <Toast message={toast.message} />
+      <Toast message={toast.message} onDismiss={toast.dismiss} />
     </div>
   );
 }

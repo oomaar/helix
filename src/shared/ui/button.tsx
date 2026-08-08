@@ -46,7 +46,7 @@ export function Button({
       aria-busy={loading || undefined}
       disabled={disabled ?? loading}
       className={cn(
-        "focus-visible:ring-brand-line inline-flex cursor-pointer items-center justify-center font-sans font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+        "focus-visible:ring-brand-line inline-flex cursor-pointer items-center justify-center font-sans font-medium whitespace-nowrap transition-[color,background-color,border-color,transform] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100",
         VARIANTS[variant],
         SIZES[size],
         fullWidth && "w-full",
