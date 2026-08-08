@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   applyBulkAction,
   type BulkAction,
@@ -164,6 +164,36 @@ export function ResourcesView() {
   const isEmpty = Boolean(
     data && (flat ? flat.items.length === 0 : grouped!.groups.length === 0),
   );
+  /**
+   * Reordering is expressed in column *keys*, not indices: the header row shows
+   * only visible columns while the Columns menu shows every column, so an index
+   * means something different in each.
+   */
+  const moveColumn = useCallback((fromKey: ColumnKey, toKey: ColumnKey) => {
+    setColumnOrder((prev) => {
+      const from = prev.indexOf(fromKey);
+      const to = prev.indexOf(toKey);
+      if (from < 0 || to < 0) return prev;
+      return moveItem(prev, from, to);
+    });
+  }, []);
+
+  const hideColumn = useCallback((key: ColumnKey) => {
+    setVisibleColumns((prev) => {
+      const next = new Set(prev);
+      next.delete(key);
+      return next;
+    });
+  }, []);
+
+  const sortByDirection = useCallback(
+    (key: GridSortKey, direction: "asc" | "desc") => {
+      setSort({ key, direction });
+      setPage(1);
+    },
+    [],
+  );
+
   const orderedColumns = useMemo(
     () =>
       columnOrder
@@ -350,9 +380,7 @@ export function ResourcesView() {
             <ColumnsMenu
               visible={visibleColumns}
               order={orderedColumns}
-              onReorder={(from, to) =>
-                setColumnOrder((prev) => moveItem(prev, from, to))
-              }
+              onMoveColumn={moveColumn}
               onToggle={(key) =>
                 setVisibleColumns((prev) => {
                   const next = new Set(prev);
@@ -468,6 +496,9 @@ export function ResourcesView() {
               onQuickAction={onQuickAction}
               onContextMenu={rowMenu.onContextMenu}
               allVisibleIds={allVisibleIds}
+              onMoveColumn={moveColumn}
+              onHideColumn={hideColumn}
+              onSortDirection={sortByDirection}
             />
           )}
         </div>

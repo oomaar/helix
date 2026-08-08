@@ -11,7 +11,7 @@ type ColumnsMenuProps = {
   /** Columns in display order — the menu reflects and edits this order. */
   order: readonly ColumnDef[];
   onToggle: (key: ColumnKey) => void;
-  onReorder: (from: number, to: number) => void;
+  onMoveColumn: (fromKey: ColumnKey, toKey: ColumnKey) => void;
 };
 
 /**
@@ -25,11 +25,11 @@ export function ColumnsMenu({
   visible,
   order,
   onToggle,
-  onReorder,
+  onMoveColumn,
 }: ColumnsMenuProps) {
   const reorder = useDragReorder({
     count: order.length,
-    onReorder,
+    onReorder: (from, to) => onMoveColumn(order[from]!.key, order[to]!.key),
     describe: (index) => order[index]?.label ?? "Column",
   });
 
@@ -42,6 +42,7 @@ export function ColumnsMenu({
           size="sm"
           variant="secondary"
           aria-expanded={open}
+          title="Show, hide and reorder columns"
           onClick={toggle}
         >
           Columns
