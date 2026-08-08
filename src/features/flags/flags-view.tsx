@@ -87,6 +87,7 @@ export function FlagsView() {
         <Input
           className="h-9 min-w-56 flex-1"
           leading={<SearchIcon size={14} />}
+          data-shortcut-search
           placeholder="Search flags by key, name…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}

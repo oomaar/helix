@@ -156,6 +156,7 @@ export function PoliciesView() {
         <Input
           className="w-full sm:w-64"
           value={filters.search}
+          data-shortcut-search
           placeholder="Search policies…"
           aria-label="Search policies"
           leading={<SearchIcon size={14} />}

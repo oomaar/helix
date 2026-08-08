@@ -91,6 +91,7 @@ export function AuditView() {
         <Input
           className="h-9 min-w-56 flex-1"
           leading={<SearchIcon size={14} />}
+          data-shortcut-search
           placeholder="Search by actor, action, resource, IP, id…"
           value={search}
           onChange={(e) => {

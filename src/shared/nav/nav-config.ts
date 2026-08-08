@@ -30,6 +30,8 @@ export type NavItem = {
   activeWhen?: readonly string[];
   /** Hidden from the sidebar when the role can't view this scope. */
   scope?: PermissionScope;
+  /** Key that jumps here after the `g` prefix. Must be unique across nav. */
+  shortcut?: string;
 };
 
 export type NavGroup = {
@@ -46,12 +48,14 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Dashboard",
         href: "/dashboard",
         icon: DashboardIcon,
+        shortcut: "d",
       },
       {
         id: "analytics",
         label: "Analytics",
         href: "/analytics",
         icon: AnalyticsIcon,
+        shortcut: "a",
         scope: "budgets",
       },
     ],
@@ -64,6 +68,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Resources",
         href: "/resources",
         icon: ResourcesIcon,
+        shortcut: "r",
         scope: "resources",
         activeWhen: ["/resources"],
       },
@@ -72,6 +77,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Operations",
         href: "/operations",
         icon: OperationsIcon,
+        shortcut: "o",
         scope: "incidents",
       },
       {
@@ -79,6 +85,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Investigation",
         href: "/investigations",
         icon: InvestigationIcon,
+        shortcut: "i",
         scope: "incidents",
         activeWhen: ["/investigations"],
       },
@@ -87,6 +94,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Cost anomalies",
         href: "/anomalies",
         icon: AnomaliesIcon,
+        shortcut: "c",
         scope: "budgets",
       },
       {
@@ -94,6 +102,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Alert rules",
         href: "/alerts",
         icon: AlertRulesIcon,
+        shortcut: "l",
         scope: "alerts",
       },
     ],
@@ -106,6 +115,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Budgets",
         href: "/budgets",
         icon: BudgetsIcon,
+        shortcut: "b",
         scope: "budgets",
       },
       {
@@ -113,6 +123,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Policies",
         href: "/policies",
         icon: PoliciesIcon,
+        shortcut: "p",
         scope: "policies",
       },
       {
@@ -120,6 +131,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Audit log",
         href: "/audit",
         icon: AuditIcon,
+        shortcut: "t",
         scope: "audit",
       },
     ],
@@ -132,6 +144,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Users & roles",
         href: "/users",
         icon: UsersIcon,
+        shortcut: "u",
         scope: "users",
       },
       {
@@ -139,6 +152,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Feature flags",
         href: "/flags",
         icon: FlagsIcon,
+        shortcut: "f",
         scope: "flags",
       },
       {
@@ -146,6 +160,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Integrations",
         href: "/integrations",
         icon: IntegrationsIcon,
+        shortcut: "n",
         scope: "integrations",
       },
       {
@@ -153,6 +168,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
         label: "Organization",
         href: "/settings",
         icon: SettingsIcon,
+        shortcut: "s",
         scope: "users",
       },
     ],

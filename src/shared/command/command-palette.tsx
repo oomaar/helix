@@ -19,6 +19,7 @@ import {
   emitOpenProvisioning,
   requestCreate,
 } from "@/shared/lib/app-events";
+import { useShortcuts } from "@/shared/keyboard";
 import { NAV_GROUPS } from "@/shared/nav/nav-config";
 import { useSession } from "@/shared/session";
 import { useTheme } from "@/shared/theme/theme-provider";
@@ -46,6 +47,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const { can } = useSession();
+  const { openGuide } = useShortcuts();
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -129,6 +131,18 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         perform: go("/dashboard"),
       },
       {
+        id: "action:shortcuts",
+        label: "Keyboard shortcuts",
+        group: "Actions",
+        icon: SearchIcon,
+        keywords: "keyboard shortcuts keys help hotkeys",
+        hint: "?",
+        perform: () => {
+          onClose();
+          openGuide();
+        },
+      },
+      {
         id: "action:theme",
         label:
           theme === "dark" ? "Switch to light theme" : "Switch to dark theme",
@@ -142,7 +156,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       },
     ];
     return [...nav, ...actions];
-  }, [router, theme, toggleTheme, onClose, can]);
+  }, [router, theme, toggleTheme, onClose, can, openGuide]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();

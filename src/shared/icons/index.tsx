@@ -101,6 +101,11 @@ export const InfoIcon = icon([
   "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z",
   "M12 11v5M12 8h.01",
 ]);
+export const HelpIcon = icon([
+  "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z",
+  "M9.6 9.2a2.5 2.5 0 1 1 3.2 3.1c-.6.3-.8.7-.8 1.4v.3",
+  "M12 17h.01",
+]);
 export const TrashIcon = icon([
   "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13",
   "M10 11v6M14 11v6",

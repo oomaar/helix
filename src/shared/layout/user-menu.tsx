@@ -8,6 +8,7 @@ import {
 } from "@/lib/backend";
 import { cn } from "@/lib/utils";
 import { useCommandPalette } from "@/shared/command";
+import { useShortcuts } from "@/shared/keyboard";
 import {
   AnomaliesIcon,
   ChevronUpDownIcon,
@@ -44,6 +45,7 @@ export function UserMenu() {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const palette = useCommandPalette();
+  const { openGuide } = useShortcuts();
   const { session, switchRole, switching } = useSession();
   const online = useOnlineStatus();
 
@@ -125,6 +127,16 @@ export function UserMenu() {
             }}
           >
             Command palette
+          </MenuItem>
+          <MenuItem
+            icon={<ChevronUpDownIcon size={15} className="text-text-3" />}
+            hint={<Kbd>?</Kbd>}
+            onClick={() => {
+              close();
+              openGuide();
+            }}
+          >
+            Keyboard shortcuts
           </MenuItem>
           <MenuItem
             icon={

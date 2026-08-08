@@ -81,6 +81,7 @@ export function FilterPanel(props: FilterPanelProps) {
         <Input
           className="h-9 min-w-56 flex-1"
           leading={<SearchIcon size={14} />}
+          data-shortcut-search
           placeholder="Search resources by name, type, team…"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}

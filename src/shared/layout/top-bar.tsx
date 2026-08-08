@@ -1,7 +1,8 @@
 "use client";
 
-import { MenuIcon, SearchIcon } from "@/shared/icons";
+import { HelpIcon, MenuIcon, SearchIcon } from "@/shared/icons";
 import { useCommandPalette } from "@/shared/command";
+import { useShortcuts } from "@/shared/keyboard";
 import { IconButton } from "@/shared/ui/icon-button";
 import { Kbd } from "@/shared/ui/kbd";
 import { ThemeToggle } from "@/shared/theme/theme-toggle";
@@ -13,6 +14,7 @@ import { useSidebar } from "./sidebar-context";
 export function TopBar() {
   const palette = useCommandPalette();
   const sidebar = useSidebar();
+  const { openGuide } = useShortcuts();
 
   return (
     <header
@@ -50,6 +52,15 @@ export function TopBar() {
         </IconButton>
 
         <EnvSwitcher />
+
+        <IconButton
+          aria-label="Keyboard shortcuts"
+          title="Keyboard shortcuts"
+          aria-keyshortcuts="?"
+          onClick={openGuide}
+        >
+          <HelpIcon size={16} />
+        </IconButton>
 
         <NotificationsMenu />
 

@@ -146,6 +146,7 @@ export function AlertRulesView() {
         <Input
           className="w-full sm:w-64"
           value={filters.search}
+          data-shortcut-search
           placeholder="Search alert rules…"
           aria-label="Search alert rules"
           leading={<SearchIcon size={14} />}
