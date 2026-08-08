@@ -16,6 +16,10 @@ type AlertRuleRowProps = {
   busy: boolean;
   onEdit: (rule: AlertRuleWithRelations) => void;
   onToggle: (rule: AlertRuleWithRelations, enabled: boolean) => void;
+  onContextMenu: (
+    event: React.MouseEvent,
+    rule: AlertRuleWithRelations,
+  ) => void;
 };
 
 export function AlertRuleRow({
@@ -23,12 +27,17 @@ export function AlertRuleRow({
   busy,
   onEdit,
   onToggle,
+  onContextMenu,
 }: AlertRuleRowProps) {
   const severity = SEVERITY_META[rule.severity];
   const breaching = rule.enabled && rule.breaching > 0;
 
   return (
-    <Card className={cn("p-4", !rule.enabled && "opacity-70")}>
+    <Card
+      interactive
+      className={cn("p-4", !rule.enabled && "opacity-70")}
+      onContextMenu={(event) => onContextMenu(event, rule)}
+    >
       <div className="flex flex-wrap items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">

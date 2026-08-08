@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   applyBulkAction,
   type BulkAction,
@@ -25,8 +26,13 @@ import {
 } from "@/shared/lib/app-events";
 import { PlusIcon } from "@/shared/icons";
 import { useAsync } from "@/shared/hooks/use-async";
+import { useContextMenu } from "@/shared/hooks/use-context-menu";
+import { moveItem } from "@/shared/hooks/use-drag-reorder";
+import { useSession } from "@/shared/session";
 import {
   Button,
+  ContextMenu,
+  type ContextMenuItem,
   EmptyState,
   PageHeader,
   Pagination,
@@ -86,6 +92,11 @@ export function ResourcesView() {
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<ColumnKey>>(
     new Set(DEFAULT_VISIBLE_COLUMNS),
+  );
+  // Display order is explicit state rather than the constant's order, so the
+  // grid can be rearranged to match how a given team reads its estate.
+  const [columnOrder, setColumnOrder] = useState<readonly ColumnKey[]>(() =>
+    COLUMNS.map((c) => c.key),
   );
   const [drawer, setDrawer] = useState<ResourceWithRelations | null>(null);
   const [configResource, setConfigResource] =
@@ -153,7 +164,44 @@ export function ResourcesView() {
   const isEmpty = Boolean(
     data && (flat ? flat.items.length === 0 : grouped!.groups.length === 0),
   );
-  const columns = COLUMNS.filter((c) => visibleColumns.has(c.key));
+  /**
+   * Reordering is expressed in column *keys*, not indices: the header row shows
+   * only visible columns while the Columns menu shows every column, so an index
+   * means something different in each.
+   */
+  const moveColumn = useCallback((fromKey: ColumnKey, toKey: ColumnKey) => {
+    setColumnOrder((prev) => {
+      const from = prev.indexOf(fromKey);
+      const to = prev.indexOf(toKey);
+      if (from < 0 || to < 0) return prev;
+      return moveItem(prev, from, to);
+    });
+  }, []);
+
+  const hideColumn = useCallback((key: ColumnKey) => {
+    setVisibleColumns((prev) => {
+      const next = new Set(prev);
+      next.delete(key);
+      return next;
+    });
+  }, []);
+
+  const sortByDirection = useCallback(
+    (key: GridSortKey, direction: "asc" | "desc") => {
+      setSort({ key, direction });
+      setPage(1);
+    },
+    [],
+  );
+
+  const orderedColumns = useMemo(
+    () =>
+      columnOrder
+        .map((key) => COLUMNS.find((c) => c.key === key))
+        .filter((c) => c !== undefined),
+    [columnOrder],
+  );
+  const columns = orderedColumns.filter((c) => visibleColumns.has(c.key));
 
   // --- filter handlers ---
   const applyFilter = (next: FilterGroupNode) => {
@@ -253,7 +301,70 @@ export function ResourcesView() {
     }
   };
 
+  const router = useRouter();
   const provisioning = useProvisioning();
+  const { can } = useSession();
+  const rowMenu = useContextMenu<ResourceWithRelations>();
+
+  /**
+   * Right-click actions for a grid row. Mirrors the expanded-row quick actions
+   * and adds the clipboard shortcuts that only make sense per-row; write
+   * actions are hidden from roles without `edit`.
+   */
+  const rowMenuItems = (
+    resource: ResourceWithRelations,
+  ): readonly ContextMenuItem[] => {
+    const canEdit = can("resources", "edit");
+    const copy = (value: string, what: string) => () => {
+      void navigator.clipboard?.writeText(value);
+      toast.show(`Copied ${what}`);
+    };
+    return [
+      {
+        id: "open",
+        label: "Open details",
+        onSelect: () => router.push(`/resources/${resource.id}`),
+      },
+      {
+        id: "preview",
+        label: "Preview",
+        onSelect: () => setDrawer(resource),
+      },
+      {
+        id: "select",
+        label: selected.has(resource.id) ? "Deselect row" : "Select row",
+        separatorBefore: true,
+        onSelect: () => toggle(resource.id),
+      },
+      ...(canEdit
+        ? ([
+            {
+              id: "edit",
+              label: "Edit configuration",
+              onSelect: () => setConfigResource(resource),
+            },
+            {
+              id: "restart",
+              label: "Restart",
+              tone: "danger" as const,
+              onSelect: () => void onQuickAction("Restart", resource),
+            },
+          ] satisfies ContextMenuItem[])
+        : []),
+      {
+        id: "copy-name",
+        label: "Copy name",
+        separatorBefore: true,
+        onSelect: copy(resource.name, "resource name"),
+      },
+      {
+        id: "copy-id",
+        label: "Copy resource ID",
+        hint: resource.id,
+        onSelect: copy(resource.id, "resource ID"),
+      },
+    ];
+  };
 
   const description = summary.data
     ? `${summary.data.total.toLocaleString()} resources across ${summary.data.providers.join(", ")} · ${moneyCompact(summary.data.monthlyCost)}/mo blended`
@@ -268,6 +379,8 @@ export function ResourcesView() {
           <>
             <ColumnsMenu
               visible={visibleColumns}
+              order={orderedColumns}
+              onMoveColumn={moveColumn}
               onToggle={(key) =>
                 setVisibleColumns((prev) => {
                   const next = new Set(prev);
@@ -381,7 +494,11 @@ export function ResourcesView() {
               onToggleMany={toggleMany}
               onOpen={setDrawer}
               onQuickAction={onQuickAction}
+              onContextMenu={rowMenu.onContextMenu}
               allVisibleIds={allVisibleIds}
+              onMoveColumn={moveColumn}
+              onHideColumn={hideColumn}
+              onSortDirection={sortByDirection}
             />
           )}
         </div>
@@ -397,6 +514,15 @@ export function ResourcesView() {
       </div>
 
       <ResourceDrawer resource={drawer} onClose={() => setDrawer(null)} />
+
+      {rowMenu.opened ? (
+        <ContextMenu
+          label={`Actions for ${rowMenu.opened.target.name}`}
+          anchor={rowMenu.opened.anchor}
+          items={rowMenuItems(rowMenu.opened.target)}
+          onClose={rowMenu.close}
+        />
+      ) : null}
 
       {configResource ? (
         <EditConfigurationWizard
@@ -427,7 +553,7 @@ export function ResourcesView() {
         />
       ) : null}
 
-      <Toast message={toast.message} />
+      <Toast message={toast.message} onDismiss={toast.dismiss} />
     </div>
   );
 }

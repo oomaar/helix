@@ -101,12 +101,20 @@ export const InfoIcon = icon([
   "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z",
   "M12 11v5M12 8h.01",
 ]);
+export const HelpIcon = icon([
+  "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z",
+  "M9.6 9.2a2.5 2.5 0 1 1 3.2 3.1c-.6.3-.8.7-.8 1.4v.3",
+  "M12 17h.01",
+]);
 export const TrashIcon = icon([
   "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13",
   "M10 11v6M14 11v6",
 ]);
 export const PencilIcon = icon(["M4 20h4L20 8l-4-4L4 16z", "M14 6l4 4"]);
 export const CopyIcon = icon(["M9 9h11v11H9z", "M15 5H4v11"]);
+export const GripIcon = icon([
+  "M9 6h.01M9 12h.01M9 18h.01M15 6h.01M15 12h.01M15 18h.01",
+]);
 export const HelixLogoIcon = icon([
   "M7 4c5 3 5 5 10 8M17 4c-5 3-5 5-10 8M7 12c5 3 5 5 10 8M17 12c-5 3-5 5-10 8",
 ]);

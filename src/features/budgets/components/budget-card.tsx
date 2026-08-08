@@ -20,7 +20,7 @@ export function BudgetCard({ budget, onEdit }: BudgetCardProps) {
   const meta = STATUS_META[status];
 
   return (
-    <Card className="p-4">
+    <Card interactive className="p-4">
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="text-text truncate text-[13.5px] font-semibold">
@@ -47,7 +47,10 @@ export function BudgetCard({ budget, onEdit }: BudgetCardProps) {
       {/* progress track with alert-threshold ticks */}
       <div className="bg-hover relative mt-2 h-2 overflow-hidden rounded-full">
         <div
-          className={cn("h-full rounded-full", meta.bar)}
+          className={cn(
+            "h-full rounded-full transition-[width] duration-500 ease-out",
+            meta.bar,
+          )}
           style={{ width: `${Math.min(100, pct)}%` }}
         />
         {budget.thresholds.map((t) => (

@@ -51,7 +51,7 @@ export function DetailHeader({
           <Button
             size="sm"
             variant="secondary"
-            disabled={busy}
+            loading={busy}
             onClick={onRestart}
           >
             {busy ? "Restarting…" : "Restart"}

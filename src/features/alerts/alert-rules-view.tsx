@@ -10,10 +10,14 @@ import {
 } from "@/lib/backend";
 import { PlusIcon, SearchIcon } from "@/shared/icons";
 import { useAsync } from "@/shared/hooks/use-async";
+import { useContextMenu } from "@/shared/hooks/use-context-menu";
+import { useSession } from "@/shared/session";
 import { useCreateRequest } from "@/shared/hooks/use-create-request";
 import {
   Button,
   Card,
+  ContextMenu,
+  type ContextMenuItem,
   EmptyState,
   Input,
   PageHeader,
@@ -44,7 +48,40 @@ export function AlertRulesView() {
     rule: AlertRuleWithRelations | null;
   } | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  // Enabled-state applied locally ahead of the server confirming it.
+  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const toast = useToast();
+  const { can } = useSession();
+  const rowMenu = useContextMenu<AlertRuleWithRelations>();
+
+  const ruleMenuItems = (
+    rule: AlertRuleWithRelations,
+  ): readonly ContextMenuItem[] => {
+    const canEdit = can("alerts", "edit");
+    return [
+      {
+        id: "edit",
+        label: canEdit ? "Edit rule" : "View rule",
+        onSelect: () => setBuilder({ rule }),
+      },
+      {
+        id: "toggle",
+        label: rule.enabled ? "Mute rule" : "Activate rule",
+        disabled: !canEdit,
+        separatorBefore: true,
+        onSelect: () => onToggle(rule, !rule.enabled),
+      },
+      {
+        id: "copy-name",
+        label: "Copy rule name",
+        separatorBefore: true,
+        onSelect: () => {
+          void navigator.clipboard?.writeText(rule.name);
+          toast.show("Copied rule name");
+        },
+      },
+    ];
+  };
 
   useCreateRequest("alert-rule", () => setBuilder({ rule: null }));
 
@@ -58,19 +95,29 @@ export function AlertRulesView() {
     setFilters((f) => ({ ...f, ...changes }));
 
   const refresh = () => {
+    // Server truth is arriving; local optimistic state must not mask it.
+    setOverrides({});
     summary.reload();
     rules.reload();
   };
 
-  const onToggle = async (rule: AlertRuleWithRelations, enabled: boolean) => {
+  // Optimistic: the switch moves at once and rolls back if the write fails.
+  const onToggle = (rule: AlertRuleWithRelations, enabled: boolean) => {
+    setOverrides((prev) => ({ ...prev, [rule.id]: enabled }));
     setBusyId(rule.id);
-    try {
-      await setAlertRuleEnabled(rule.id, enabled);
-      refresh();
-      toast.show(`${enabled ? "Activated" : "Muted"} rule · ${rule.name}`);
-    } finally {
-      setBusyId(null);
-    }
+    void setAlertRuleEnabled(rule.id, enabled)
+      .then((saved) => {
+        if (!saved) throw new Error("This rule no longer exists.");
+        summary.reload();
+        toast.show(`${enabled ? "Activated" : "Muted"} rule · ${rule.name}`);
+      })
+      .catch((error: unknown) => {
+        setOverrides((prev) => ({ ...prev, [rule.id]: !enabled }));
+        toast.show(
+          `Couldn't update ${rule.name} · ${error instanceof Error ? error.message : "the change failed"}`,
+        );
+      })
+      .finally(() => setBusyId(null));
   };
 
   const onSaved = (name: string) => {
@@ -86,7 +133,9 @@ export function AlertRulesView() {
     { label: "Triggers · 7d", value: summary.data?.triggers7d },
   ];
 
-  const filtered = rules.data ?? [];
+  const filtered = (rules.data ?? []).map((r) =>
+    r.id in overrides ? { ...r, enabled: overrides[r.id]! } : r,
+  );
   const hasFilters =
     filters.search !== "" ||
     filters.severity !== "all" ||
@@ -132,6 +181,7 @@ export function AlertRulesView() {
         <Input
           className="w-full sm:w-64"
           value={filters.search}
+          data-shortcut-search
           placeholder="Search alert rules…"
           aria-label="Search alert rules"
           leading={<SearchIcon size={14} />}
@@ -213,6 +263,7 @@ export function AlertRulesView() {
               busy={busyId === rule.id}
               onEdit={(r) => setBuilder({ rule: r })}
               onToggle={onToggle}
+              onContextMenu={rowMenu.onContextMenu}
             />
           ))}
         </div>
@@ -226,7 +277,16 @@ export function AlertRulesView() {
         />
       ) : null}
 
-      <Toast message={toast.message} />
+      {rowMenu.opened ? (
+        <ContextMenu
+          label={`Actions for ${rowMenu.opened.target.name}`}
+          anchor={rowMenu.opened.anchor}
+          items={ruleMenuItems(rowMenu.opened.target)}
+          onClose={rowMenu.close}
+        />
+      ) : null}
+
+      <Toast message={toast.message} onDismiss={toast.dismiss} />
     </div>
   );
 }

@@ -133,7 +133,7 @@ export function InvestigationView({ id }: { id: string }) {
         </div>
       </div>
 
-      <Toast message={toast.message} />
+      <Toast message={toast.message} onDismiss={toast.dismiss} />
     </div>
   );
 }

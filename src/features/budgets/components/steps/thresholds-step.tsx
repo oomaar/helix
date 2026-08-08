@@ -3,6 +3,7 @@
 import type { BudgetAction, BudgetThreshold } from "@/lib/backend";
 import { money } from "@/lib/utils";
 import { FormSection, RepeatableList } from "@/shared/forms";
+import { moveItem } from "@/shared/hooks/use-drag-reorder";
 import { Callout, Field, Input, Select } from "@/shared/ui";
 import { THRESHOLD_ACTION_OPTIONS } from "../../constants";
 import { newThreshold, thresholdAmount } from "../../helpers";
@@ -49,6 +50,10 @@ export function ThresholdsStep({ draft, set, errors }: BudgetStepProps) {
           onRemove={(id) =>
             set({ thresholds: draft.thresholds.filter((t) => t.id !== id) })
           }
+          onReorder={(from, to) =>
+            set({ thresholds: moveItem(draft.thresholds, from, to) })
+          }
+          describeRow={(t) => `${t.percent}% threshold`}
           renderRow={(threshold) => (
             <div className="space-y-2.5">
               <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-[110px_1fr]">

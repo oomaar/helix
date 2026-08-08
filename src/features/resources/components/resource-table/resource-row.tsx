@@ -16,6 +16,7 @@ type ResourceRowProps = {
   onToggleExpand: () => void;
   onOpen: () => void;
   onQuickAction: (action: string, resource: ResourceWithRelations) => void;
+  onContextMenu: (event: React.MouseEvent) => void;
 };
 
 export function ResourceRow({
@@ -28,11 +29,13 @@ export function ResourceRow({
   onToggleExpand,
   onOpen,
   onQuickAction,
+  onContextMenu,
 }: ResourceRowProps) {
   return (
     <>
       <tr
         onClick={onOpen}
+        onContextMenu={onContextMenu}
         className={cn(
           "border-border-token hover:bg-hover cursor-pointer border-b transition-colors",
           selected && "bg-brand-soft/40",

@@ -4,6 +4,11 @@ import { cn } from "@/lib/utils";
 type CardProps = HTMLAttributes<HTMLDivElement> & {
   as?: "div" | "section" | "article";
   padded?: boolean;
+  /**
+   * Card carries actions of its own (row menu, edit, toggle). Lifts on hover so
+   * it reads as something you can act on rather than a static panel.
+   */
+  interactive?: boolean;
 };
 
 /**
@@ -13,6 +18,7 @@ type CardProps = HTMLAttributes<HTMLDivElement> & {
 export function Card({
   as: Tag = "div",
   padded = false,
+  interactive = false,
   className,
   ...rest
 }: CardProps) {
@@ -21,6 +27,8 @@ export function Card({
       className={cn(
         "bg-surface rounded-panel border-border-token border shadow-(--shadow-elev-1)",
         padded && "p-[15px_18px]",
+        interactive &&
+          "hover:border-border-strong transition-[border-color,box-shadow] hover:shadow-(--shadow-elev-2)",
         className,
       )}
       {...rest}

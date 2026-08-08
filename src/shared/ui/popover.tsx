@@ -72,7 +72,7 @@ export function Popover({
           role="menu"
           aria-label={label}
           className={cn(
-            "border-border-strong bg-raised absolute z-50 min-w-55 rounded-[10px] border p-1 shadow-(--shadow-elev-2)",
+            "border-border-strong bg-raised animate-pop-in absolute z-50 min-w-55 rounded-[10px] border p-1 shadow-(--shadow-elev-2)",
             side === "bottom" ? "top-full mt-1.5" : "bottom-full mb-1.5",
             align === "end" ? "right-0" : "left-0",
             panelClassName,

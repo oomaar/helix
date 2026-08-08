@@ -46,7 +46,7 @@ export function ScheduledChangesPanel({
                 size="sm"
                 variant="ghost"
                 className="ml-auto"
-                disabled={busyId === change.id}
+                loading={busyId === change.id}
                 onClick={() => onCancel(change)}
               >
                 {busyId === change.id ? "Cancelling…" : "Cancel"}

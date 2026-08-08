@@ -9,6 +9,7 @@ import {
   updateFlag,
 } from "@/lib/backend";
 import { SearchIcon } from "@/shared/icons";
+import { useOptimisticList } from "@/shared/hooks/use-optimistic-list";
 import {
   Card,
   EmptyState,
@@ -16,14 +17,21 @@ import {
   PageHeader,
   Select,
   Skeleton,
+  Toast,
+  useToast,
 } from "@/shared/ui";
 import { FlagCard } from "./components/flag-card";
 import { ROLLOUT_FILTER_OPTIONS } from "./constants";
 
 export function FlagsView() {
-  const [flags, setFlags] = useState<FeatureFlagWithOwner[] | null>(null);
+  const {
+    items: flags,
+    setItems: setFlags,
+    update,
+  } = useOptimisticList<FeatureFlagWithOwner>();
   const [search, setSearch] = useState("");
   const [rollout, setRollout] = useState<FlagRollout | "all">("all");
+  const toast = useToast();
 
   useEffect(() => {
     let active = true;
@@ -33,14 +41,21 @@ export function FlagsView() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [setFlags]);
 
+  // Toggling a flag lands instantly, but a rejected write (or an outage) rolls
+  // the card back rather than leaving the UI claiming a change that never was.
   const onPatch = (id: string, patch: FlagPatch) => {
-    setFlags(
-      (prev) =>
-        prev?.map((f) => (f.id === id ? { ...f, ...patch } : f)) ?? prev,
+    const flag = flags?.find((f) => f.id === id);
+    update(
+      id,
+      patch as Partial<FeatureFlagWithOwner>,
+      () => updateFlag(id, patch),
+      (error) =>
+        toast.show(
+          `Couldn't update ${flag?.name ?? "flag"} · ${error.message}`,
+        ),
     );
-    void updateFlag(id, patch);
   };
 
   const total = flags?.length ?? 0;
@@ -72,6 +87,7 @@ export function FlagsView() {
         <Input
           className="h-9 min-w-56 flex-1"
           leading={<SearchIcon size={14} />}
+          data-shortcut-search
           placeholder="Search flags by key, name…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -104,6 +120,8 @@ export function FlagsView() {
           ))}
         </div>
       )}
+
+      <Toast message={toast.message} onDismiss={toast.dismiss} />
     </div>
   );
 }

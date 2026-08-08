@@ -65,7 +65,7 @@ export function Dialog({
       )}
     >
       <div
-        className="absolute inset-0 bg-[color-mix(in_srgb,var(--color-bg)_60%,transparent)] backdrop-blur-[2px]"
+        className="animate-fade-in absolute inset-0 bg-[color-mix(in_srgb,var(--color-bg)_60%,transparent)] backdrop-blur-[2px]"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -76,7 +76,7 @@ export function Dialog({
         aria-labelledby={labelledBy}
         tabIndex={-1}
         className={cn(
-          "border-border-strong bg-raised rounded-panel relative z-10 w-full max-w-140 border shadow-(--shadow-elev-2) outline-none",
+          "border-border-strong bg-raised rounded-panel animate-pop-in relative z-10 w-full max-w-140 border shadow-(--shadow-elev-2) outline-none",
           className,
         )}
       >

@@ -105,7 +105,8 @@ export function OrganizationView() {
               size="sm"
               variant="primary"
               onClick={save}
-              disabled={!dirty || saving}
+              loading={saving}
+              disabled={!dirty}
             >
               {saving ? "Saving…" : "Save changes"}
             </Button>
@@ -276,7 +277,7 @@ export function OrganizationView() {
         </div>
       )}
 
-      <Toast message={toast.message} />
+      <Toast message={toast.message} onDismiss={toast.dismiss} />
     </div>
   );
 }

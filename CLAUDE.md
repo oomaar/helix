@@ -524,6 +524,55 @@ Shared UI
   and ChipGroup get aria-labelledby
 ```
 
+## Phase 9 — System States & Interactions ✅
+
+Every state the product can be in is now designed, and the interaction layer
+answers back.
+
+```
+System states
+- Route-level error boundary inside the shell: a render error takes out the page
+  body while the sidebar, top bar and palette stay usable
+- Permission denied — the seeded permission matrix now governs the UI: session
+  with `inherits` chains resolved, RequireScope on all 15 routes with an
+  explanatory denial, permission-filtered sidebar + command palette, new
+  policies / alerts scopes, and a role switcher that makes it demonstrable
+- Offline mode: OfflineError raised at the transport layer so every screen
+  surfaces outages through its existing error state; banner with recovery
+  confirmation, an offline simulator, and useAsync auto-retry on reconnect
+- API failures: error + retry on every list, submit-error callout in wizards
+- Optimistic updates with rollback (useOptimisticList) — replaced the
+  fire-and-forget flag toggle; also backs the policy and alert-rule switches
+
+Interactions
+- Keyboard shortcuts: `G` then a key jumps to any screen (keys declared on the
+  nav config so they can't drift), `?` opens the guide, `/` focuses search.
+  Yields to text entry and open dialogs, and honours permissions
+- Shortcuts guide rendered from the same definitions the listener uses, so a
+  shortcut can't be implemented but undocumented; reachable via `?`, the
+  palette, the user menu, or the top-bar help button
+- Context menus: summoned at the pointer, viewport-aware, keyboard operable
+  (Shift+F10 anchors to the focused element). On resource rows, policy cards
+  and alert rules, with write actions gated by permission
+- Drag & drop: grid column order — discoverable via a hover grip on headers, a
+  header context menu, or the Columns menu — plus RepeatableList rows. Keyboard
+  route and live-region announcements throughout
+- Animations: `--animate-*` tokens in @theme give real Tailwind utilities
+  (fade-in, pop-in, slide-in-right, slide-up); dialogs pop, drawers slide,
+  toasts rise. Spinner + a `loading` prop on Button for in-flight actions
+- Micro interactions: press feedback on the interactive primitives, hover lift
+  on cards that carry actions, budget progress that travels to its value,
+  click-to-dismiss toasts
+- A prefers-reduced-motion guard neutralises all of it
+
+Shared
+- session (SessionProvider / useCan / RequireScope), keyboard (ShortcutsProvider
+  + guide), connection (OfflineError, online store)
+- Hooks: useOnlineStatus, useOptimisticList, useContextMenu, useDragReorder,
+  useGlobalShortcuts, useCreateRequest
+- ContextMenu + Spinner primitives; Card gains an `interactive` variant
+```
+
 ---
 
 # Current Phase
@@ -531,20 +580,19 @@ Shared UI
 Current Phase:
 
 ```
-Roadmap complete (Phases 1–8) — polish & QA
+
 ```
 
 Current Goal:
 
 ```
-All planned screens and the five flagship forms are built. Optional next steps:
-- "Optimize" is still a stub (resource detail header + grid row action) —
-  becoming real needs a rightsizing recommendation flow
-- Reconcile the four new forms (Budget, Policy, Alert Rule, Edit Config) back
-  into the design file; they currently set their own precedent
-- Browser interaction QA across flows (charts, drawers, wizards, dropdowns)
-- Bump seed volume for fuller grids/pagination
-- Persist grid view-state (sort/filter/columns) to the URL
+
+```
+
+Tasks:
+
+```
+
 ```
 
 ---

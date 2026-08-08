@@ -4,6 +4,11 @@ export { Button, type ButtonSize, type ButtonVariant } from "./button";
 export { Callout, type CalloutTone } from "./callout";
 export { Card, CardBody, CardHeader, CardSubtitle, CardTitle } from "./card";
 export { Chip } from "./chip";
+export {
+  ContextMenu,
+  type ContextMenuAnchor,
+  type ContextMenuItem,
+} from "./context-menu";
 export { ChipGroup } from "./chip-group";
 export { Dialog } from "./dialog";
 export { Divider } from "./divider";
@@ -15,6 +20,7 @@ export { MenuItem, MenuLabel, MenuSeparator } from "./menu";
 export { PageHeader } from "./page-header";
 export { Popover } from "./popover";
 export { Skeleton } from "./skeleton";
+export { Spinner } from "./spinner";
 export { StatusDot, type StatusTone } from "./status-dot";
 export { Switch } from "./switch";
 export { Field } from "./field";

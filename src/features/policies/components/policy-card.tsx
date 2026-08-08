@@ -11,6 +11,7 @@ type PolicyCardProps = {
   busy: boolean;
   onEdit: (policy: PolicyWithRelations) => void;
   onToggle: (policy: PolicyWithRelations, enabled: boolean) => void;
+  onContextMenu: (event: React.MouseEvent, policy: PolicyWithRelations) => void;
 };
 
 export function PolicyCard({
@@ -18,12 +19,17 @@ export function PolicyCard({
   busy,
   onEdit,
   onToggle,
+  onContextMenu,
 }: PolicyCardProps) {
   const enforcement = ENFORCEMENT_META[policy.enforcement];
   const compliant = policy.violations === 0;
 
   return (
-    <Card className={cn("p-4", !policy.enabled && "opacity-70")}>
+    <Card
+      interactive
+      className={cn("p-4", !policy.enabled && "opacity-70")}
+      onContextMenu={(event) => onContextMenu(event, policy)}
+    >
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">

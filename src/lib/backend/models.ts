@@ -223,6 +223,8 @@ export type PermissionScope =
   | "resources"
   | "budgets"
   | "incidents"
+  | "policies"
+  | "alerts"
   | "flags"
   | "users"
   | "audit"
