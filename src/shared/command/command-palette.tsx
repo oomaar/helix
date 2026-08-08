@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { PermissionScope } from "@/lib/backend";
 import {
   AlertRulesIcon,
   BudgetsIcon,
@@ -19,6 +20,7 @@ import {
   requestCreate,
 } from "@/shared/lib/app-events";
 import { NAV_GROUPS } from "@/shared/nav/nav-config";
+import { useSession } from "@/shared/session";
 import { useTheme } from "@/shared/theme/theme-provider";
 import { Dialog, EmptyState, Kbd } from "@/shared/ui";
 
@@ -32,9 +34,18 @@ type Command = {
   perform: () => void;
 };
 
+/** Actions that write, and the scope a role needs `edit` on to see them. */
+const WRITE_SCOPES: Readonly<Record<string, PermissionScope>> = {
+  "action:provision": "resources",
+  "action:new-budget": "budgets",
+  "action:new-policy": "policies",
+  "action:new-alert-rule": "alerts",
+};
+
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+  const { can } = useSession();
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -54,16 +65,19 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       requestCreate(target);
     };
     const nav: Command[] = NAV_GROUPS.flatMap((group) =>
-      group.items.map((item) => ({
-        id: `nav:${item.id}`,
-        label: item.label,
-        group: "Navigate",
-        icon: item.icon,
-        keywords: `${group.label} ${item.href}`,
-        perform: go(item.href),
-      })),
+      // Don't offer a jump the role can't follow.
+      group.items
+        .filter((item) => !item.scope || can(item.scope))
+        .map((item) => ({
+          id: `nav:${item.id}`,
+          label: item.label,
+          group: "Navigate",
+          icon: item.icon,
+          keywords: `${group.label} ${item.href}`,
+          perform: go(item.href),
+        })),
     );
-    const actions: Command[] = [
+    const writable: Command[] = [
       {
         id: "action:provision",
         label: "Provision resource",
@@ -99,6 +113,13 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         keywords: "new alert rule threshold notification paging oncall",
         perform: create("/alerts", "alert-rule"),
       },
+    ].filter(
+      (c) =>
+        WRITE_SCOPES[c.id] === undefined || can(WRITE_SCOPES[c.id]!, "edit"),
+    );
+
+    const actions: Command[] = [
+      ...writable,
       {
         id: "action:export",
         label: "Export dashboard report",
@@ -121,7 +142,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       },
     ];
     return [...nav, ...actions];
-  }, [router, theme, toggleTheme, onClose]);
+  }, [router, theme, toggleTheme, onClose, can]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();

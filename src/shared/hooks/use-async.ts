@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { subscribeToConnection } from "@/lib/backend";
 
 export type AsyncState<T> = {
   data: T | null;
@@ -66,6 +67,16 @@ export function useAsync<T>(
   }, [nonce, ...deps]);
 
   const reload = useCallback(() => setNonce((n) => n + 1), []);
+
+  // Coming back online re-runs whatever failed while the connection was down,
+  // so screens recover on their own instead of stranding the user on an error.
+  const failed = status.error !== null;
+  useEffect(() => {
+    if (!failed) return;
+    return subscribeToConnection((online) => {
+      if (online) reload();
+    });
+  }, [failed, reload]);
 
   return { data, loading: status.loading, error: status.error, reload };
 }

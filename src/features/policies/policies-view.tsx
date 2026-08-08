@@ -51,6 +51,8 @@ export function PoliciesView() {
     policy: PolicyWithRelations | null;
   } | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  // Enabled-state applied locally ahead of the server confirming it.
+  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const toast = useToast();
 
   useCreateRequest("policy", () => setBuilder({ policy: null }));
@@ -65,19 +67,31 @@ export function PoliciesView() {
     setFilters((f) => ({ ...f, ...changes }));
 
   const refresh = () => {
+    // Server truth is arriving; local optimistic state must not mask it.
+    setOverrides({});
     summary.reload();
     policies.reload();
   };
 
-  const onToggle = async (policy: PolicyWithRelations, enabled: boolean) => {
+  // Optimistic: the switch moves at once and rolls back if the write fails.
+  const onToggle = (policy: PolicyWithRelations, enabled: boolean) => {
+    setOverrides((prev) => ({ ...prev, [policy.id]: enabled }));
     setBusyId(policy.id);
-    try {
-      await setPolicyEnabled(policy.id, enabled);
-      refresh();
-      toast.show(`${enabled ? "Enabled" : "Disabled"} policy · ${policy.name}`);
-    } finally {
-      setBusyId(null);
-    }
+    void setPolicyEnabled(policy.id, enabled)
+      .then((saved) => {
+        if (!saved) throw new Error("This policy no longer exists.");
+        summary.reload();
+        toast.show(
+          `${enabled ? "Enabled" : "Disabled"} policy · ${policy.name}`,
+        );
+      })
+      .catch((error: unknown) => {
+        setOverrides((prev) => ({ ...prev, [policy.id]: !enabled }));
+        toast.show(
+          `Couldn't update ${policy.name} · ${error instanceof Error ? error.message : "the change failed"}`,
+        );
+      })
+      .finally(() => setBusyId(null));
   };
 
   const onSaved = (name: string) => {
@@ -93,7 +107,9 @@ export function PoliciesView() {
     { label: "Open violations", value: summary.data?.violations },
   ];
 
-  const filtered = policies.data ?? [];
+  const filtered = (policies.data ?? []).map((p) =>
+    p.id in overrides ? { ...p, enabled: overrides[p.id]! } : p,
+  );
   const hasFilters =
     filters.search !== "" ||
     filters.category !== "all" ||

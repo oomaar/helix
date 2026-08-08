@@ -1,4 +1,5 @@
 export * from "./users";
+export * from "./session";
 export * from "./teams";
 export * from "./providers";
 export * from "./integrations";

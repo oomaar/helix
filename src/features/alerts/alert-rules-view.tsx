@@ -44,6 +44,8 @@ export function AlertRulesView() {
     rule: AlertRuleWithRelations | null;
   } | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  // Enabled-state applied locally ahead of the server confirming it.
+  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const toast = useToast();
 
   useCreateRequest("alert-rule", () => setBuilder({ rule: null }));
@@ -58,19 +60,29 @@ export function AlertRulesView() {
     setFilters((f) => ({ ...f, ...changes }));
 
   const refresh = () => {
+    // Server truth is arriving; local optimistic state must not mask it.
+    setOverrides({});
     summary.reload();
     rules.reload();
   };
 
-  const onToggle = async (rule: AlertRuleWithRelations, enabled: boolean) => {
+  // Optimistic: the switch moves at once and rolls back if the write fails.
+  const onToggle = (rule: AlertRuleWithRelations, enabled: boolean) => {
+    setOverrides((prev) => ({ ...prev, [rule.id]: enabled }));
     setBusyId(rule.id);
-    try {
-      await setAlertRuleEnabled(rule.id, enabled);
-      refresh();
-      toast.show(`${enabled ? "Activated" : "Muted"} rule · ${rule.name}`);
-    } finally {
-      setBusyId(null);
-    }
+    void setAlertRuleEnabled(rule.id, enabled)
+      .then((saved) => {
+        if (!saved) throw new Error("This rule no longer exists.");
+        summary.reload();
+        toast.show(`${enabled ? "Activated" : "Muted"} rule · ${rule.name}`);
+      })
+      .catch((error: unknown) => {
+        setOverrides((prev) => ({ ...prev, [rule.id]: !enabled }));
+        toast.show(
+          `Couldn't update ${rule.name} · ${error instanceof Error ? error.message : "the change failed"}`,
+        );
+      })
+      .finally(() => setBusyId(null));
   };
 
   const onSaved = (name: string) => {
@@ -86,7 +98,9 @@ export function AlertRulesView() {
     { label: "Triggers · 7d", value: summary.data?.triggers7d },
   ];
 
-  const filtered = rules.data ?? [];
+  const filtered = (rules.data ?? []).map((r) =>
+    r.id in overrides ? { ...r, enabled: overrides[r.id]! } : r,
+  );
   const hasFilters =
     filters.search !== "" ||
     filters.severity !== "all" ||

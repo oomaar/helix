@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { CloseIcon, HelixLogoIcon } from "@/shared/icons";
 import { cn } from "@/lib/utils";
 import { NAV_GROUPS, type NavItem } from "@/shared/nav/nav-config";
+import { useSession } from "@/shared/session";
 import { Badge } from "@/shared/ui/badge";
 import { IconButton } from "@/shared/ui/icon-button";
 import { useSidebar } from "./sidebar-context";
@@ -19,6 +20,14 @@ function isActive(item: NavItem, pathname: string): boolean {
 /** Inner sidebar content, shared by the desktop rail and the mobile drawer. */
 function SidebarContent({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
+  const { can } = useSession();
+
+  // Navigation mirrors authority: a destination the role can't open is not
+  // offered. Groups left with nothing to show drop out entirely.
+  const visibleGroups = NAV_GROUPS.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => !item.scope || can(item.scope)),
+  })).filter((group) => group.items.length > 0);
 
   return (
     <>
@@ -51,7 +60,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2.5 pt-2.5 pb-1">
-        {NAV_GROUPS.map((group) => (
+        {visibleGroups.map((group) => (
           <div key={group.label} className="mb-3">
             <div className="text-text-3 px-2 pt-1.5 pb-1 text-[10px] font-semibold tracking-wider uppercase">
               {group.label}
