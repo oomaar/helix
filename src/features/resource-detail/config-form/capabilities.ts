@@ -1,6 +1,10 @@
 import type { ResourceKind } from "@/lib/backend";
 import type { SelectOption } from "@/shared/ui";
 
+import { ENVIRONMENT_OPTIONS } from "@/shared/lib/domain-options";
+
+export { ENVIRONMENT_OPTIONS };
+
 /**
  * Which configuration sections apply to which resource kind.
  *
@@ -83,12 +87,6 @@ export const MAINTENANCE_WINDOW_OPTIONS: readonly SelectOption[] = [
   { value: "sun:03:00-04:00 UTC", label: "Sunday 03:00–04:00 UTC" },
   { value: "sat:02:00-03:00 UTC", label: "Saturday 02:00–03:00 UTC" },
   { value: "wed:04:00-05:00 UTC", label: "Wednesday 04:00–05:00 UTC" },
-];
-
-export const ENVIRONMENT_OPTIONS: readonly SelectOption[] = [
-  { value: "production", label: "Production" },
-  { value: "staging", label: "Staging" },
-  { value: "development", label: "Development" },
 ];
 
 export const RETENTION_OPTIONS: readonly SelectOption[] = [

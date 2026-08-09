@@ -7,6 +7,15 @@ import type {
 } from "@/lib/backend";
 import type { BadgeTone, SelectOption } from "@/shared/ui";
 
+import {
+  ENVIRONMENT_OPTIONS,
+  PROVIDER_OPTIONS,
+  REGION_OPTIONS,
+  RESOURCE_KIND_OPTIONS as KIND_OPTIONS,
+} from "@/shared/lib/domain-options";
+
+export { ENVIRONMENT_OPTIONS, PROVIDER_OPTIONS, REGION_OPTIONS, KIND_OPTIONS };
+
 export const CATEGORY_LABELS: Readonly<Record<PolicyCategory, string>> = {
   cost: "Cost",
   security: "Security",
@@ -66,36 +75,6 @@ export const SCOPE_LABELS: Readonly<Record<PolicyScopeKind, string>> = {
 export const SCOPE_OPTIONS: readonly SelectOption[] = (
   Object.keys(SCOPE_LABELS) as PolicyScopeKind[]
 ).map((value) => ({ value, label: SCOPE_LABELS[value] }));
-
-export const ENVIRONMENT_OPTIONS: readonly SelectOption[] = [
-  { value: "production", label: "Production" },
-  { value: "staging", label: "Staging" },
-  { value: "development", label: "Development" },
-];
-
-export const PROVIDER_OPTIONS: readonly SelectOption[] = [
-  { value: "AWS", label: "AWS" },
-  { value: "Azure", label: "Azure" },
-  { value: "GCP", label: "GCP" },
-];
-
-export const REGION_OPTIONS: readonly SelectOption[] = [
-  { value: "us-east-1", label: "us-east-1" },
-  { value: "us-west-2", label: "us-west-2" },
-  { value: "eu-west-1", label: "eu-west-1" },
-  { value: "eu-central-1", label: "eu-central-1" },
-  { value: "ap-southeast-1", label: "ap-southeast-1" },
-];
-
-export const KIND_OPTIONS: readonly SelectOption[] = [
-  { value: "compute", label: "Compute" },
-  { value: "database", label: "Database" },
-  { value: "storage", label: "Storage" },
-  { value: "network", label: "Network" },
-  { value: "cache", label: "Cache" },
-  { value: "queue", label: "Queue" },
-  { value: "cluster", label: "Cluster" },
-];
 
 export const STATUS_OPTIONS: readonly SelectOption[] = [
   { value: "healthy", label: "Healthy" },

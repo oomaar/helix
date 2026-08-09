@@ -8,6 +8,13 @@ import type {
 } from "@/lib/backend";
 import type { BadgeTone, SelectOption } from "@/shared/ui";
 
+import {
+  ENVIRONMENT_OPTIONS,
+  PROVIDER_OPTIONS,
+} from "@/shared/lib/domain-options";
+
+export { ENVIRONMENT_OPTIONS, PROVIDER_OPTIONS };
+
 export const SEVERITY_META: Readonly<
   Record<Severity, { label: string; description: string; tone: BadgeTone }>
 > = {
@@ -40,18 +47,6 @@ export const TARGET_LABELS: Readonly<Record<AlertTargetKind, string>> = {
 export const TARGET_OPTIONS: readonly SelectOption[] = (
   Object.keys(TARGET_LABELS) as AlertTargetKind[]
 ).map((value) => ({ value, label: TARGET_LABELS[value] }));
-
-export const ENVIRONMENT_OPTIONS: readonly SelectOption[] = [
-  { value: "production", label: "Production" },
-  { value: "staging", label: "Staging" },
-  { value: "development", label: "Development" },
-];
-
-export const PROVIDER_OPTIONS: readonly SelectOption[] = [
-  { value: "AWS", label: "AWS" },
-  { value: "Azure", label: "Azure" },
-  { value: "GCP", label: "GCP" },
-];
 
 /**
  * Metric catalogue. `unit` and `max` drive the threshold input, and
