@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import { useState } from "react";
 import {
   type BudgetPeriod,
@@ -22,8 +24,12 @@ import {
   useToast,
 } from "@/shared/ui";
 import { BudgetCard } from "./components/budget-card";
-import { BudgetWizard } from "./components/budget-wizard";
 import { PERIOD_FILTER_OPTIONS } from "./constants";
+
+const BudgetWizard = dynamic(
+  () => import("./components/budget-wizard").then((m) => m.BudgetWizard),
+  { ssr: false },
+);
 
 export function BudgetsView() {
   const [period, setPeriod] = useState<BudgetPeriod | "all">("all");

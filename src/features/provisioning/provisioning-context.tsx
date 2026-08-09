@@ -2,7 +2,13 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { PROVISION_EVENT } from "@/shared/lib/app-events";
-import { ProvisionWizard } from "./provision-wizard";
+import dynamic from "next/dynamic";
+
+// Deferred: the wizard and its four steps only load once launched.
+const ProvisionWizard = dynamic(
+  () => import("./provision-wizard").then((m) => m.ProvisionWizard),
+  { ssr: false },
+);
 
 type ProvisioningContextValue = { open: () => void; close: () => void };
 

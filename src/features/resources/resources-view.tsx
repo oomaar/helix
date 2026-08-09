@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -19,7 +21,7 @@ import {
 } from "@/lib/backend";
 import { moneyCompact } from "@/lib/utils";
 import { useProvisioning } from "@/features/provisioning";
-import { EditConfigurationWizard } from "@/features/resource-detail";
+
 import {
   RESOURCE_CREATED_EVENT,
   type ResourceCreatedDetail,
@@ -60,6 +62,13 @@ import { ColumnsMenu } from "./components/columns-menu";
 import { FilterPanel, type FilterMode } from "./components/filter-panel";
 import { ResourceDrawer } from "./components/resource-drawer";
 import { ResourceTable } from "./components/resource-table";
+
+// Deferred: the configuration form only loads when a resource is edited.
+const EditConfigurationWizard = dynamic(
+  () =>
+    import("@/features/resource-detail").then((m) => m.EditConfigurationWizard),
+  { ssr: false },
+);
 
 type GridData =
   | {

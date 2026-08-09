@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import { useState } from "react";
 import {
   getPoliciesSummary,
@@ -32,8 +34,12 @@ import {
   ENFORCEMENT_FILTER_OPTIONS,
   STATE_FILTER_OPTIONS,
 } from "./constants";
-import { PolicyBuilder } from "./components/policy-builder";
 import { PolicyCard } from "./components/policy-card";
+
+const PolicyBuilder = dynamic(
+  () => import("./components/policy-builder").then((m) => m.PolicyBuilder),
+  { ssr: false },
+);
 
 type Filters = {
   search: string;

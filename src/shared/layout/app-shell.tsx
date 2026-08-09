@@ -33,9 +33,25 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Sidebar />
             <SidebarDrawer />
             <div className="flex h-full min-w-0 flex-1 flex-col">
+              {/*
+               * First tab stop on every screen: without it a keyboard user
+               * traverses the whole sidebar before reaching the page. Visually
+               * hidden until focused.
+               */}
+              <a
+                href="#main-content"
+                className="bg-brand focus-visible:ring-brand-line sr-only rounded-b-[8px] px-3 py-2 text-[12.5px] font-medium text-white focus-visible:not-sr-only focus-visible:absolute focus-visible:top-2 focus-visible:left-2 focus-visible:z-100 focus-visible:ring-2"
+              >
+                Skip to content
+              </a>
               <TopBar />
               <OfflineBanner />
-              <main data-shell-main className="min-h-0 flex-1 overflow-y-auto">
+              <main
+                id="main-content"
+                tabIndex={-1}
+                data-shell-main
+                className="min-h-0 flex-1 overflow-y-auto outline-none"
+              >
                 {children}
               </main>
             </div>
