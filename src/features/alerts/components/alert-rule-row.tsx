@@ -41,9 +41,9 @@ export function AlertRuleRow({
       <div className="flex flex-wrap items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <h3 className="text-text text-[13.5px] font-semibold">
+            <h2 className="text-text text-[13.5px] font-semibold">
               {rule.name}
-            </h3>
+            </h2>
             <Badge tone={severity.tone}>{rule.severity.toUpperCase()}</Badge>
             {breaching ? (
               <Badge tone="danger">{rule.breaching} breaching</Badge>
@@ -62,6 +62,7 @@ export function AlertRuleRow({
 
         <div className="flex flex-none items-center gap-2">
           <Switch
+            ariaLabel={`${rule.enabled ? "Mute" : "Activate"} alert rule ${rule.name}`}
             checked={rule.enabled}
             disabled={busy}
             onChange={(value) => onToggle(rule, value)}

@@ -33,9 +33,9 @@ export function PolicyCard({
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <h3 className="text-text text-[13.5px] font-semibold">
+            <h2 className="text-text text-[13.5px] font-semibold">
               {policy.name}
-            </h3>
+            </h2>
             <Badge tone={CATEGORY_TONE[policy.category]} mono={false}>
               {CATEGORY_LABELS[policy.category]}
             </Badge>
@@ -49,6 +49,7 @@ export function PolicyCard({
           </p>
         </div>
         <Switch
+          ariaLabel={`${policy.enabled ? "Disable" : "Enable"} policy ${policy.name}`}
           checked={policy.enabled}
           disabled={busy}
           onChange={(value) => onToggle(policy, value)}

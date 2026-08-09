@@ -9,6 +9,8 @@ type SwitchProps = {
   description?: string;
   disabled?: boolean;
   id?: string;
+  /** Required when there is no visible `label` — the control needs a name. */
+  ariaLabel?: string;
 };
 
 /**
@@ -23,6 +25,7 @@ export function Switch({
   description,
   disabled,
   id,
+  ariaLabel,
 }: SwitchProps) {
   const track = (
     <span
@@ -45,6 +48,7 @@ export function Switch({
     type: "button" as const,
     role: "switch" as const,
     "aria-checked": checked,
+    "aria-label": label ? undefined : ariaLabel,
     disabled,
     onClick: () => onChange(!checked),
   };
