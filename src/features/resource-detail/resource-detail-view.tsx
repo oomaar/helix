@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -9,7 +11,7 @@ import {
 } from "@/lib/backend";
 import { useAsync } from "@/shared/hooks/use-async";
 import { Button, EmptyState, Skeleton, Toast, useToast } from "@/shared/ui";
-import { EditConfigurationWizard } from "./config-form/edit-configuration-wizard";
+
 import { ScheduledChangesPanel } from "./components/scheduled-changes-panel";
 import { AccessControl } from "./components/access-control";
 import { ActivityTimeline } from "./components/activity-timeline";
@@ -20,6 +22,15 @@ import { DetailHeader } from "./components/detail-header";
 import { DetailsSidebar } from "./components/details-sidebar";
 import { MetricsPanel } from "./components/metrics-panel";
 import { RelatedResources } from "./components/related-resources";
+
+// Deferred: the configuration form only loads when a resource is edited.
+const EditConfigurationWizard = dynamic(
+  () =>
+    import("./config-form/edit-configuration-wizard").then(
+      (m) => m.EditConfigurationWizard,
+    ),
+  { ssr: false },
+);
 
 type ResourceDetailViewProps = { id: string };
 

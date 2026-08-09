@@ -11,8 +11,14 @@ import {
 } from "react";
 import { NAV_GROUPS } from "@/shared/nav/nav-config";
 import { useSession } from "@/shared/session";
-import { ShortcutsDialog } from "./shortcuts-dialog";
+import dynamic from "next/dynamic";
+
 import { useGlobalShortcuts } from "./use-global-shortcuts";
+
+const ShortcutsDialog = dynamic(
+  () => import("./shortcuts-dialog").then((m) => m.ShortcutsDialog),
+  { ssr: false },
+);
 
 type ShortcutsContextValue = { openGuide: () => void };
 

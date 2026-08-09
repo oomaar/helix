@@ -1,7 +1,13 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { CommandPalette } from "./command-palette";
+import dynamic from "next/dynamic";
+
+// Deferred: the palette is a large tree that most sessions never open.
+const CommandPalette = dynamic(
+  () => import("./command-palette").then((m) => m.CommandPalette),
+  { ssr: false },
+);
 
 type CommandPaletteContextValue = { open: () => void; close: () => void };
 

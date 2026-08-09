@@ -1,5 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import { useState } from "react";
 import {
   type AlertRuleWithRelations,
@@ -27,8 +29,13 @@ import {
   useToast,
 } from "@/shared/ui";
 import { SEVERITY_FILTER_OPTIONS, STATE_FILTER_OPTIONS } from "./constants";
-import { AlertRuleBuilder } from "./components/alert-rule-builder";
 import { AlertRuleRow } from "./components/alert-rule-row";
+
+const AlertRuleBuilder = dynamic(
+  () =>
+    import("./components/alert-rule-builder").then((m) => m.AlertRuleBuilder),
+  { ssr: false },
+);
 
 type Filters = {
   search: string;
