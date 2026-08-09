@@ -39,5 +39,6 @@
     "*.{json,md,css}": [
       "prettier --write"
     ]
-  }
+  },
+  "description": "Enterprise cloud operations platform \u2014 a production-grade Next.js frontend."
 }

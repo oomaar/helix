@@ -573,6 +573,41 @@ Shared
 - ContextMenu + Spinner primitives; Card gains an `interactive` variant
 ```
 
+## Phase 10 — Final Polish ✅
+
+Production quality: the pass that makes it presentable and defensible.
+
+```
+Accessibility
+- Skip-to-content link as the first tab stop on every screen
+- Heading order corrected (policy/alert cards were h3 under an h1)
+- Bare toggles named — the enable/disable switches on policy cards and alert
+  rows had no accessible name
+- Audited every route by machine, at 1440px and 375px, for unnamed controls,
+  heading skips, missing landmarks and layout overflow
+
+Responsive
+- Verified clean at 375px across all 14 screens: no horizontal overflow
+
+Performance & code splitting
+- Overlays deferred with next/dynamic — command palette, shortcuts guide and
+  all five wizards load on first open, not with the route
+- Measured: /budgets ships 196 KB initially; the budget wizard's 70 KB across
+  15 chunks arrives only when opened
+
+Cleanup & refactoring
+- Domain option lists (environments, providers, regions, resource kinds) were
+  redefined in four places; consolidated into shared/lib/domain-options with
+  the union types as the source of truth
+- No console.log, TODO or dead harness routes remain
+
+Documentation & portfolio
+- README rewritten from the create-next-app boilerplate: what the project is,
+  screens, engineering highlights, architecture and how to run it
+- Six screenshots captured from a production build in both themes
+- Root metadata: title template, description, Open Graph
+```
+
 ---
 
 # Current Phase
@@ -580,19 +615,20 @@ Shared
 Current Phase:
 
 ```
-
+Roadmap complete (Phases 1–10)
 ```
 
 Current Goal:
 
 ```
-
-```
-
-Tasks:
-
-```
-
+All ten phases are delivered. Optional follow-ups, none blocking:
+- "Optimize" on the resource detail header and grid row is still a demo stub
+- Grid column order/visibility aren't persisted or part of saved views
+- Touch devices get no drag-reorder or context menus; the Columns menu with
+  its arrow-key path stays the universal route
+- The four Phase 8 forms have no counterpart in the design file
+- Deepen the simulation: causal event chains, a live time anchor, larger seed
+  volumes, anomalies as first-class entities
 ```
 
 ---

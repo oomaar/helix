@@ -19,8 +19,19 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Helix — Cloud Operations",
-  description: "Enterprise cloud operations platform.",
+  title: {
+    default: "Helix — Cloud Operations",
+    template: "%s · Helix",
+  },
+  description:
+    "Enterprise cloud operations platform: spend, resources, incidents and governance across every provider.",
+  applicationName: "Helix",
+  openGraph: {
+    title: "Helix — Cloud Operations",
+    description:
+      "Enterprise cloud operations platform: spend, resources, incidents and governance across every provider.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
